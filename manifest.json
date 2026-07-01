@@ -1,0 +1,67 @@
+{
+  "manifest_version": 3,
+  "name": "Remind.hub",
+  "version": "5.1.8",
+  "description": "Produtividade completa: Lembretes, Kanban, Cofre, Contatos, PiP Apps, Sessões, Atalhos e Monitoramento de Streams ao vivo.",
+  "author": "Endrigo",
+  "homepage_url": "https://driftweb.com.br",
+  "permissions": [
+    "declarativeNetRequest",
+    "notifications",
+    "alarms",
+    "storage",
+    "tabs",
+    "system.display",
+    "cookies",
+    "identity"
+  ],
+  "oauth2": {
+    "client_id": "590890043647-bakgtfb36a90v9c0l0lkcgjmo6vsfrrb.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/drive.appdata",
+      "https://www.googleapis.com/auth/userinfo.email",
+      "https://www.googleapis.com/auth/userinfo.profile"
+    ]
+  },
+  "host_permissions": [
+    "https://*.twitch.tv/*",
+    "https://*.youtube.com/*",
+    "https://*.youtube-nocookie.com/*",
+    "https://*.kick.com/*",
+    "https://api.web3forms.com/*",
+    "<all_urls>"
+  ],
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "ruleset_1",
+        "enabled": true,
+        "path": "rules.json"
+      }
+    ]
+  },
+  "action": {
+    "default_title": "Remind.hub"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.twitch.tv/*",
+        "https://*.youtube.com/*",
+        "https://*.kick.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remind.hub PiP</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0a0a; }
+        iframe { width: 100%; height: 100%; border: none; }
+        .error-overlay {
+            display: none;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #0a0a0a;
+            color: #b0b0b0;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: Inter, system-ui, sans-serif;
+            text-align: center;
+            padding: 30px;
+            gap: 16px;
+        }
+        .error-overlay.active { display: flex; }
+        .error-overlay h3 { color: #F44336; font-size: 16px; }
+        .error-overlay p { font-size: 13px; line-height: 1.5; }
+        .error-overlay button {
+            background: var(--primary, #00C080); color: white; border: none;
+            padding: 10px 24px; border-radius: 10px; font-size: 13px;
+            cursor: pointer; font-weight: 600;
+        }
+        .error-overlay button:hover { opacity: 0.9; }
+    </style>
+    <script>
+        (function() {
+            const color = localStorage.getItem('driftweb_accent_color') || '#00C080';
+            document.documentElement.style.setProperty('--primary', color);
+        })();
+    </script>
+</head>
+<body>
+    <iframe id="targetFrame"
+        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads allow-modals"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
+        referrerpolicy="no-referrer-when-downgrade"
+    ></iframe>
+
+    <div class="error-overlay" id="errorOverlay">
+        <h3>Não foi possível carregar o site</h3>
+        <p id="errorMsg">O site bloqueou o carregamento em iframe.</p>
+        <button id="btnOpenTab">Abrir em nova aba</button>
+    </div>
+
+    <script src="pip-frame.js"></script>
+</body>
+</html>

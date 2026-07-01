@@ -1,0 +1,3690 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="appTitle">Remind.hub</title>
+    <script>
+        (function () {
+            try {
+                const root = document.documentElement;
+                const color = localStorage.getItem('driftweb_accent_color') || '#00C080';
+                const r = parseInt(color.slice(1, 3), 16);
+                const g = parseInt(color.slice(3, 5), 16);
+                const b = parseInt(color.slice(5, 7), 16);
+                const rgb = r + ", " + g + ", " + b;
+
+                root.style.setProperty('--primary', color);
+                root.style.setProperty('--primary-rgb', rgb);
+                root.style.setProperty('--primary-glow', 'rgba(' + rgb + ', 0.4)');
+
+                // Força o estado sem transição inicial
+                root.classList.add('no-transition');
+                window.addEventListener('DOMContentLoaded', () => {
+                    setTimeout(() => root.classList.remove('no-transition'), 200);
+                });
+            } catch (e) { }
+        })();
+    </script>
+    <style>
+        .no-transition,
+        .no-transition * {
+            transition: none !important;
+        }
+
+        :root {
+            --bg-glass: rgba(30, 30, 30, 0.7);
+            --bg-sidebar: #151515;
+            --bg-main: #0a0a0a;
+            --primary: #00C080;
+            --primary-rgb: 0, 192, 128;
+            --primary-glow: rgba(0, 192, 128, 0.4);
+            --text-main: #ffffff;
+            --text-dim: #b0b0b0;
+            --border-glass: rgba(255, 255, 255, 0.1);
+            --accent-success: var(--primary);
+            --accent-error: #F44336;
+            --accent-warning: #FF9800;
+            --accent-live: var(--primary);
+            --sidebar-width: 260px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body.light-mode {
+            --bg-glass: rgba(255, 255, 255, 0.8);
+            --bg-sidebar: #f5f5f5;
+            --bg-main: #ffffff;
+            --text-main: #1a1a1a;
+            --text-dim: #666666;
+            --border-glass: rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+
+        body {
+            background: var(--bg-main);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        #multiViewModal:fullscreen .modal-content-glass {
+            max-width: 100vw !important;
+            max-height: 100vh !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            border-radius: 0 !important;
+            border: none !important;
+        }
+
+        /* Multi-View Chat Panel */
+        #multiViewChatPanel {
+            width: 340px;
+            min-width: 280px;
+            display: none;
+            flex-direction: column;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        #multiViewChatSelector {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .chat-radio-label {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            background: var(--border-glass);
+            color: var(--text-dim);
+            transition: var(--transition);
+            white-space: nowrap;
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            user-select: none;
+        }
+
+        .chat-radio-label:hover {
+            background: rgba(var(--primary-rgb), 0.2);
+            color: var(--text-main);
+        }
+
+        .chat-radio-label.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        #multiViewChatFrame {
+            flex: 1;
+            width: 100%;
+            border: none;
+            border-radius: 12px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border-glass);
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            z-index: 100;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden !important;
+            flex-shrink: 0;
+        }
+
+        .sidebar.collapsed {
+            width: 80px;
+            padding: 24px 16px;
+        }
+
+        .brand-text,
+        .nav-text,
+        .sidebar-footer-text {
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .sidebar.collapsed .brand-text,
+        .sidebar.collapsed .nav-text,
+        .sidebar.collapsed .sidebar-footer-text {
+            opacity: 0;
+            pointer-events: none;
+            width: 0;
+            display: inline-block;
+            overflow: hidden;
+        }
+
+        .sidebar.collapsed .brand {
+            justify-content: center;
+            margin-bottom: 32px;
+        }
+
+        .sidebar.collapsed .nav-link {
+            justify-content: center;
+            padding: 12px;
+            gap: 0;
+        }
+
+        .sidebar.collapsed .sidebar-footer {
+            align-items: center;
+        }
+
+        #btnToggleSidebar {
+            width: 32px;
+            height: 32px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: var(--transition);
+            margin: 16px auto 0;
+            margin-left: 17px;
+        }
+
+        #btnToggleSidebar:hover {
+            color: var(--primary);
+            border-color: var(--primary);
+            background: var(--primary-glow);
+        }
+
+        .sidebar.collapsed #btnToggleSidebar svg {
+            transform: rotate(180deg);
+        }
+
+        nav.sidebar.collapsed button#btnToggleSidebar {
+            margin-left: auto;
+        }
+
+        #btnToggleSidebar svg {
+            transition: transform 0.3s ease;
+        }
+
+        .no-transition {
+            transition: none !important;
+            animation: none !important;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 48px;
+        }
+
+        nav.sidebar.collapsed .brand {
+            gap: 0px;
+        }
+
+        .brand-icon {
+            min-width: 32px;
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--primary), #00e699);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px var(--primary-glow);
+        }
+
+        .nav-menu {
+            list-style: none;
+            flex-grow: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 8px;
+            /* Espaço para não encostar a barra na lateral */
+        }
+
+        .nav-menu::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .nav-menu::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .nav-menu::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .nav-menu::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-item {
+            margin-bottom: 8px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            color: var(--text-dim);
+            text-decoration: none;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--text-main);
+            background: var(--border-glass);
+        }
+
+        .nav-link.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 15px var(--primary-glow);
+        }
+
+        .sidebar-footer {
+            padding-top: 12px;
+            border-top: 1px solid var(--border-glass);
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .sidebar-footer .nav-link {
+            padding: 6px 10px;
+            gap: 6px;
+            border-radius: 8px;
+        }
+
+        .sidebar-footer .nav-link svg {
+            width: 14px;
+            height: 14px;
+            opacity: 0.6;
+        }
+
+        .sidebar-footer .nav-link .nav-text {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .sidebar-footer-text {
+            font-size: 10px !important;
+            margin-top: 2px !important;
+            opacity: 0.5;
+        }
+
+        /* Main */
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 32px;
+            overflow-y: auto;
+            position: relative;
+            min-width: 0;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .search-bar {
+            background: var(--bg-glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-glass);
+            padding: 10px 20px;
+            border-radius: 20px;
+            width: 400px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .search-bar input {
+            background: none;
+            border: none;
+            color: var(--text-main);
+            width: 100%;
+            outline: none;
+        }
+
+        /* Views */
+        .view-section {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Grid / Cards */
+        /* Dashboard Split Layout */
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 2.08fr 1fr;
+            gap: 32px;
+            margin-top: 30px;
+        }
+
+        @media (max-width: 1024px) {
+            .dashboard-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .dashboard-column-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .reminders-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .reminders-list.grid-view {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(242px, 1fr));
+            gap: 16px;
+        }
+
+        .shortcut-list-narrow {
+            display: block;
+        }
+
+        .shortcut-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 8px;
+            padding-top: 1px;
+            background: none;
+            /* Removido fundo externo */
+            border: 1px solid transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+            width: 100%;
+            max-width: 76px;
+        }
+
+        .shortcut-item:hover {
+            background: var(--border-glass);
+            border-color: var(--border-glass);
+        }
+
+        .shortcut-item:hover .drag-handle {
+            opacity: 0.8 !important;
+        }
+
+        .shortcut-item .shortcut-icon-wrapper {
+            width: 44px;
+            height: 44px;
+            background: var(--bg-glass);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 4px;
+            transition: var(--transition);
+        }
+
+        .shortcut-item:hover .shortcut-icon-wrapper {
+            border-color: var(--primary);
+            background: transparent;
+        }
+
+        .shortcut-item .shortcut-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+        }
+
+        .shortcut-item .shortcut-name {
+            font-size: 10px;
+            color: var(--text-dim);
+            max-width: 60px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .view-toggle-btn {
+            background: var(--border-glass);
+            border: 1px solid var(--border-glass);
+            color: var(--text-dim);
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .view-toggle-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Minimalist Flat Icons */
+        .stat-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            background: var(--border-glass);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            border: 1px solid var(--border-glass);
+        }
+
+        .brand-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: none;
+            color: white;
+            font-size: 18px;
+        }
+
+        /* Grid / Cards / Stats */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        @media (max-width: 768px) {
+            .stat-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .stat-card {
+            background: var(--bg-glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-glass);
+            padding: 6px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .reminders-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .shortcut-grid {
+            margin-top: 20px;
+        }
+
+        /* Categories */
+        .category-container {
+            margin-bottom: 24px;
+            padding: 16px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid transparent;
+            transition: var(--transition);
+        }
+
+        .drag-handle.category-drag {
+            margin-left: -7px;
+        }
+
+        .category-container.drag-over {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--primary);
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 4px !important;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 0px solid var(--border-glass) !important;
+        }
+
+        .category-header h4 {
+            font-size: 11px;
+            letter-spacing: 0.05em;
+            color: #bbbbbb !important;
+            font-weight: 400 !important;
+            text-transform: uppercase;
+        }
+
+        .category-drag:hover {
+            opacity: 1 !important;
+            color: var(--primary);
+        }
+
+        /* Dashboard Specific Category Styles */
+        #dash-shortcut-grid .category-container {
+            padding: 8px 0;
+            margin-bottom: 12px;
+            background: transparent;
+            border: none;
+        }
+
+        #dash-shortcut-grid .category-header {
+            margin-bottom: 8px;
+            padding-bottom: 4px;
+        }
+
+        #dash-shortcut-grid .category-header h4 {
+            font-size: 10px;
+        }
+
+        #dash-shortcut-grid .shortcut-list-grouped {
+            grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)) !important;
+            gap: 8px !important;
+        }
+
+        .reminder-card-premium {
+            background: var(--bg-glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-glass);
+            padding: 20px;
+            border-radius: 14px;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .reminder-card-premium:hover {
+            border-color: #ffffff2e;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .reminder-card-premium.drag-over {
+            background: rgba(var(--primary-rgb), 0.1) !important;
+            outline: 2px dashed var(--primary) !important;
+            outline-offset: -2px !important;
+        }
+
+        .reminder-card-premium.drag-over * {
+            pointer-events: none;
+        }
+
+        .shortcut-item:hover,
+        .shortcut-item.drag-over {
+            transform: translateY(-5px);
+            border-color: var(--border-glass);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .shortcut-list-grouped {
+            min-height: 40px;
+            transition: var(--transition);
+        }
+
+        .shortcut-list-grouped:empty::after {
+            content: "Arraste um atalho para cá";
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 60px;
+            border: 2px dashed var(--border-glass);
+            border-radius: 12px;
+            font-size: 12px;
+            color: var(--text-dim);
+            opacity: 0.5;
+            grid-column: 1 / -1;
+            pointer-events: none;
+        }
+
+        .shortcut-list-grouped.drag-over {
+            background: rgba(var(--primary-rgb), 0.1) !important;
+            border-radius: 12px;
+            outline: 2px dashed var(--primary);
+            outline-offset: 4px;
+        }
+
+        .drag-handle {
+            position: absolute;
+            bottom: 23px;
+            right: 12px;
+            width: 20px;
+            height: 20px;
+            display: grid;
+            grid-template-columns: repeat(2, 4px);
+            gap: 3px;
+            justify-content: center;
+            align-content: center;
+            opacity: 0.3;
+            cursor: grab;
+            transition: var(--transition);
+        }
+
+        .drag-handle:hover {
+            opacity: 0.8;
+        }
+
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+
+        .drag-handle div {
+            width: 3px;
+            height: 3px;
+            background: var(--text-main);
+            border-radius: 50%;
+        }
+
+        /* Dashboard Slim Smart Cards (Horizontal Refinement) */
+        .dashboard-previews {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .smart-card-dash {
+            background: var(--bg-glass);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
+            min-height: 56px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+        }
+
+        .smart-card-dash:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary);
+            box-shadow: 0 6px 20px rgba(var(--primary-rgb), 0.1);
+        }
+
+        .card-icon-area {
+            width: 36px;
+            height: 36px;
+            background: rgba(var(--primary-rgb), 0.1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            flex-shrink: 0;
+        }
+
+        .card-info {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            flex: 1;
+            min-width: 0;
+            margin-right: 15px;
+            /* Space for avatars */
+        }
+
+        .card-title-main {
+            font-size: 13px;
+            font-weight: 750;
+            color: var(--text-main);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-subtitle-small {
+            font-size: 10.5px;
+            color: var(--text-dim);
+            opacity: 0.6;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .card-favicon {
+            width: 14px;
+            height: 14px;
+            border-radius: 4px;
+            flex-shrink: 0;
+            opacity: 0.8;
+        }
+
+        .card-avatars-corner {
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            display: flex;
+            align-items: center;
+        }
+
+        .avatar-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-dim);
+            border: 1px solid var(--bg-main);
+            margin-left: -3px;
+            opacity: 0.5;
+        }
+
+        .avatar-dot.active {
+            background: var(--primary);
+            opacity: 1;
+            box-shadow: 0 0 8px var(--primary);
+        }
+
+        section#view-dashboard h1 {
+            font-size: 18px;
+        }
+
+        .dashboard-container h3 {
+            font-size: 18px;
+        }
+
+        /* Modals & Forms */
+        .modal-glass {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .modal-glass.active {
+            display: flex;
+        }
+
+        .settings-nav-btn {
+            background: transparent;
+            color: var(--text-dim);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+
+        .settings-nav-btn:hover {
+            color: var(--text-main);
+            background: var(--border-glass);
+        }
+
+        .settings-nav-btn.active {
+            background: var(--primary) !important;
+            color: white !important;
+        }
+
+        .modal-content-glass {
+            background: var(--bg-sidebar);
+            border: 1px solid var(--border-glass);
+            padding: 32px;
+            border-radius: 14px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-content-glass ul {
+            padding-left: 16px;
+        }
+
+        .form-section {
+            background: var(--bg-sidebar);
+            border: 1px solid var(--border-glass);
+            padding: 24px;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        .glass-btn {
+            background: var(--border-glass);
+            border: 1px solid var(--border-glass);
+            color: var(--text-main);
+            padding: 12px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 12px;
+            text-align: center;
+            outline: none;
+        }
+
+        .glass-btn:hover {
+            border-color: var(--primary);
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        select.glass-btn {
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23b0b0b0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            background-size: 16px;
+            padding-right: 40px;
+            cursor: pointer;
+        }
+
+        select.glass-btn option {
+            background: var(--bg-sidebar);
+            color: var(--text-main);
+            padding: 10px;
+        }
+
+        .glass-btn.primary {
+            background: var(--primary);
+            color: white;
+            border: 1px solid transparent;
+            font-weight: 600;
+        }
+
+        .glass-btn.danger {
+            background: var(--accent-error);
+            border: none;
+            color: white;
+        }
+
+        /* Custom Select */
+        .custom-select {
+            position: relative;
+            width: 100%;
+            user-select: none;
+        }
+
+        .custom-select-trigger {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            text-align: left;
+            font-weight: 500;
+        }
+
+        .custom-options {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            right: 0;
+            background: var(--bg-sidebar);
+            border: 1px solid var(--border-glass);
+            border-radius: 14px;
+            padding: 8px;
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            z-index: 1100;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        .custom-select.active .custom-options {
+            display: flex;
+        }
+
+        .custom-select.active .custom-select-trigger {
+            border-color: var(--primary);
+        }
+
+        .custom-option {
+            padding: 10px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 14px;
+            color: var(--text-dim);
+        }
+
+        .custom-option:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            transform: translateX(4px);
+        }
+
+        .custom-option.selected {
+            background: var(--primary);
+            color: white;
+            font-weight: 600;
+        }
+
+        .fab {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            width: 56px;
+            height: 56px;
+            border-radius: 28px;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px var(--primary-glow);
+            z-index: 1000;
+            transition: var(--transition);
+        }
+
+        .fab:hover {
+            transform: scale(1.1);
+        }
+
+        /* Legacy Compat */
+        #linksContainer,
+        #selectedTagsDisplay {
+            display: block;
+        }
+
+        .reminder-card-premium h3 {
+            font-size: 12px !important;
+            font-weight: 600 !important;
+        }
+
+        .due-date.overdue {
+            color: var(--accent-error);
+            font-weight: 700;
+        }
+
+        .due-date.due-today {
+            color: var(--accent-success);
+            font-weight: 700;
+        }
+
+        .due-date.due-soon {
+            color: var(--accent-warning);
+            font-weight: 700;
+        }
+
+        .reminder-desc {
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-bottom: 12px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            word-break: break-word;
+        }
+
+        .reminder-desc.has-links {
+            -webkit-line-clamp: 1;
+            line-clamp: 1;
+        }
+
+        .reminder-desc.no-links {
+            -webkit-line-clamp: 3;
+            line-clamp: 3;
+        }
+
+        /* Editor Styles */
+        .editor-container {
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            overflow: hidden;
+        }
+
+        .editor-toolbar {
+            display: flex;
+            gap: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px;
+            border-bottom: 1px solid var(--border-glass);
+        }
+
+        .editor-toolbar button {
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            padding: 4px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .editor-toolbar button:hover {
+            color: var(--text-main);
+            background: var(--border-glass);
+        }
+
+        .editor-content {
+            min-height: 80px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 12px;
+            color: var(--text-main);
+            font-size: 14px;
+            outline: none;
+            text-align: left;
+            line-height: 1.5;
+        }
+
+        .editor-content ul {
+            padding-left: 20px;
+            margin: 8px 0;
+        }
+
+        .editor-content b {
+            font-weight: 700;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            background: var(--border-glass);
+            padding: 8px 12px;
+            border-radius: 10px;
+        }
+
+        .checklist-item input[type="text"] {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-size: 14px;
+            outline: none;
+        }
+
+        .view-checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 5px;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: var(--transition);
+        }
+
+        .view-checklist-item:hover {
+            background: var(--border-glass);
+        }
+
+        .view-checklist-item input[type="checkbox"] {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-glass);
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+            position: relative;
+            transition: var(--transition);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .view-checklist-item input[type="checkbox"]:checked {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .view-checklist-item input[type="checkbox"]:checked::after {
+            content: '';
+            width: 5px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 2.5px 2.5px 0;
+            transform: rotate(45deg);
+            margin-bottom: 2px;
+        }
+
+        .view-checklist-item.done span {
+            text-decoration: line-through;
+            color: var(--text-dim);
+        }
+
+        .view-checklist-item.done span:last-child {
+            text-decoration: none !important;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-glass);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-dim);
+        }
+
+        .stream-card {
+            background: var(--bg-glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-glass);
+            padding: 16px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .stream-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .stream-card.drag-over {
+            background: rgba(var(--primary-rgb), 0.1);
+            outline: 2px dashed var(--primary);
+            outline-offset: -2px;
+        }
+
+        .stream-card:hover .drag-handle {
+            opacity: 0.8;
+        }
+
+        .stream-card .drag-handle {
+            top: 37px;
+            transform: translateY(-50%);
+            right: 6px;
+            bottom: auto;
+        }
+
+        section#view-settings .view-checklist-item:hover {
+            background: unset !important;
+        }
+
+        .stream-actions {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            margin-right: 28px;
+            /* Espaço para o drag handle */
+        }
+
+        /* Changelog Styles */
+        .changelog-container {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            padding: 16px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .changelog-item {
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .changelog-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .changelog-version {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 14px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .changelog-date {
+            font-weight: 400;
+            color: var(--text-dim);
+            font-size: 12px;
+        }
+
+        .changelog-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .changelog-list li {
+            font-size: 13px;
+            color: var(--text-main);
+            margin-bottom: 6px;
+            padding-left: 18px;
+            position: relative;
+        }
+
+        .changelog-list li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 24px;
+            width: 100%;
+        }
+
+        .settings-grid .form-section {
+            max-width: none;
+            margin-bottom: 0;
+        }
+
+        @media (max-width: 900px) {
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .stream-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .stream-platform-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--border-glass);
+        }
+
+        .live-indicator {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-live);
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+            box-shadow: 0 0 10px var(--accent-live);
+            position: relative;
+        }
+
+        .live-indicator.pulse::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: var(--accent-live);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(3);
+                opacity: 0;
+            }
+        }
+
+        .stream-status {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .stream-status.live {
+            color: var(--accent-live);
+        }
+
+        .stream-status.offline {
+            color: var(--text-dim);
+        }
+
+        /* Color Picker */
+        .color-picker {
+            display: flex;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .color-dot {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: var(--transition);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .color-dot:hover {
+            transform: scale(1.1);
+        }
+
+        .color-dot.active {
+            border-color: white;
+            transform: scale(1.1);
+            box-shadow: 0 0 15px var(--primary);
+        }
+
+        .streams-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+            margin-top: 24px;
+            transition: var(--transition);
+        }
+
+        .streams-grid.drag-over {
+            border: 2px dashed var(--primary);
+            border-radius: 12px;
+        }
+
+        .stream-card.drag-passive * {
+            pointer-events: none;
+        }
+
+        .category-container {
+            background: transparent !important;
+            border: none !important;
+        }
+
+        /* Kanban Styles */
+        .kanban-board {
+            display: flex;
+            gap: 20px;
+            margin-top: 24px;
+            height: calc(100vh - 250px);
+            min-height: 500px;
+            overflow-x: auto;
+            padding-bottom: 16px;
+        }
+
+        .kanban-column {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-glass);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            padding: 16px;
+            transition: var(--transition);
+        }
+
+        .kanban-column.drag-over {
+            background: rgba(var(--primary-rgb), 0.05);
+            border-color: var(--primary);
+        }
+
+        .kanban-column-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 0 8px;
+        }
+
+        .kanban-column-title {
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .kanban-column-count {
+            background: var(--border-glass);
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            color: var(--text-dim);
+        }
+
+        .kanban-list {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow-y: auto;
+            padding: 4px;
+            min-height: 100px;
+        }
+
+        .kanban-list::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .kanban-card {
+            cursor: grab;
+        }
+
+        .kanban-card:active {
+            cursor: grabbing;
+        }
+
+        .kanban-card .reminder-card-premium {
+            min-height: unset;
+            padding: 14px;
+        }
+
+        .kanban-card .reminder-desc {
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            font-size: 12px;
+        }
+
+        .tag-filter-container {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+            overflow-x: auto;
+            padding: 16px 8px;
+            margin-left: -8px;
+            margin-right: -8px;
+            scrollbar-width: none;
+        }
+
+        .tag-filter-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        #multiViewModal:fullscreen .modal-content-glass {
+            max-width: 100vw;
+            width: 100vw;
+            height: 100vh;
+            border-radius: 0;
+            border: none;
+            padding: 14px;
+        }
+
+        #multiViewModal:fullscreen h2 {
+            display: none;
+        }
+
+        #multiViewModal:fullscreen .modal-content-glass>div:first-child {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            opacity: 0.3;
+            transition: opacity 0.3s;
+        }
+
+        #multiViewModal:fullscreen .modal-content-glass>div:first-child:hover {
+            opacity: 1;
+        }
+
+        .nav-link.has-live {
+            position: relative;
+        }
+
+        .nav-link.has-live::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: 12px;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--primary-glow);
+            animation: pulse-sidebar 2s infinite;
+            z-index: 10;
+        }
+
+        .sidebar.collapsed .nav-link.has-live::after {
+            right: 2px;
+        }
+
+        body.focus-mode-active .nav-link.has-live::after {
+            display: none !important;
+        }
+
+        .tag-badge {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-glass);
+            color: var(--text-dim);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+
+        .tag-badge:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+        }
+
+        .tag-badge.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 4px 15px var(--primary-glow);
+        }
+
+        @keyframes pulse-sidebar {
+            0% {
+                box-shadow: 0 0 0 0 var(--primary-glow);
+            }
+
+            70% {
+                box-shadow: 0 0 0 8px rgba(var(--primary-rgb), 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(0, 255, 157, 0);
+            }
+        }
+
+        /* News Cards */
+        .news-grid {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 20px;
+            margin-top: 24px;
+        }
+
+        @media (max-width: 1400px) {
+            .news-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        @media (max-width: 1100px) {
+            .news-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .news-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .news-card {
+            background: var(--bg-glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .news-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .news-card-image {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            border-bottom: 1px solid var(--border-glass);
+        }
+
+        .news-card-content {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .news-card-tag {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: 0.1em;
+        }
+
+        .news-card-title {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 12px;
+            line-height: 1.4;
+            color: var(--text-main);
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .news-card-footer {
+            margin-top: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-glass);
+        }
+
+        .news-card-date {
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+
+        .loader-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-glass);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .spinning {
+            animation: spin 1s linear infinite !important;
+        }
+
+        .locked-card-overlay {
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 13px;
+            transition: all 0.3s ease;
+            max-height: 70px;
+        }
+
+        .locked-card-overlay input::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .reminder-card-premium .lock-icon {
+            filter: drop-shadow(0 0 5px rgba(255, 68, 68, 0.3));
+        }
+
+        .sync-status-icon:hover .custom-tooltip {
+            opacity: 1 !important;
+            transform: translateY(0) !important;
+            pointer-events: auto !important;
+        }
+
+        .profile-dropdown {
+            position: absolute;
+            top: 45px;
+            right: 0;
+            background: var(--bg-glass);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            width: 260px;
+            padding: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            display: none;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 1100;
+            animation: fadeInDropdown 0.2s ease forwards;
+        }
+
+        .profile-dropdown.active {
+            display: flex;
+        }
+
+        @keyframes fadeInDropdown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body class="dark-mode">
+    <nav class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                    <path d="M2 17l10 5 10-5"></path>
+                    <path d="M2 12l10 5 10-5"></path>
+                </svg>
+            </div>
+            <h2 class="brand-text" style="font-size: 18px; font-weight: 700;">Remind.hub</h2>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a class="nav-link active" data-view="dashboard">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                    <span class="nav-text" data-i18n="dashboard">Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-view="reminders">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                        <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                        <path d="M9 14l2 2 4-4"></path>
+                    </svg>
+                    <span class="nav-text" data-i18n="reminders">Lembretes</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-view="kanban">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                    <span class="nav-text" data-i18n="kanban">Kanban</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-view="calendar">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    <span class="nav-text" data-i18n="calendar">Calendário</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-view="vault">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    <span class="nav-text" data-i18n="vault">Cofre</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-view="shortcuts">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                    </svg>
+                    <span class="nav-text" data-i18n="shortcuts">Atalhos</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-view="contacts">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    <span class="nav-text" data-i18n="contacts">Contatos</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-view="streams">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path
+                            d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z">
+                        </path>
+                        <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon>
+                    </svg>
+                    <span class="nav-text" data-i18n="streams">Streams</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-view="pipapps">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <rect x="13" y="13" width="8" height="8" rx="2" ry="2"></rect>
+                    </svg>
+                    <span class="nav-text" data-i18n="pipApps">PiP Apps</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-view="news">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10l4 4v10a2 2 0 0 1-2 2z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                    <span class="nav-text" data-i18n="news">Notícias</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-view="sessions">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                        <line x1="8" y1="21" x2="16" y2="21"></line>
+                        <line x1="12" y1="17" x2="12" y2="21"></line>
+                    </svg>
+                    <span class="nav-text" data-i18n="sessions">Sessões</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" data-view="share">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+                        <polyline points="16 6 12 2 8 6"></polyline>
+                        <line x1="12" y1="2" x2="12" y2="15"></line>
+                    </svg>
+                    <span class="nav-text" data-i18n="share">Indique</span>
+                </a>
+            </li>
+        </ul>
+        <div class="sidebar-footer" style="margin-top: auto;">
+            <a class="nav-link" data-view="settings" style="margin-bottom: 0;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path
+                        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                    </path>
+                </svg>
+                <span class="nav-text" data-i18n="settings">Configurações</span>
+            </a>
+            <a class="nav-link" id="themeToggleDashboard" style="margin-bottom: 0;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+                <span class="nav-text" data-i18n="darkMode">Dark Mode</span>
+            </a>
+            <a class="nav-link" id="languageToggleSidebar" style="margin-bottom: 0;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="2" y1="12" x2="22" y2="12"></line>
+                    <path
+                        d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
+                    </path>
+                </svg>
+                <span class="nav-text" id="languageToggleText">English (US)</span>
+            </a>
+            <button id="btnToggleSidebar" title="Recolher Menu" data-i18n-title="collapseMenu">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+            </button>
+            <p id="appVersion" class="sidebar-footer-text"
+                style="font-size: 11px; color: var(--text-dim); text-align: center; margin-top: 8px;">
+            </p>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="top-bar">
+            <div class="search-bar">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-dim)">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="globalSearch" placeholder="Pesquisar lembretes e atalhos..."
+                    data-i18n-placeholder="searchPlaceholder">
+            </div>
+            <div class="top-bar-right" style="display: flex; align-items: center; gap: 16px;">
+                <div id="dashboardDate" style="font-size: 14px; color: var(--text-dim);"></div>
+                <div id="userProfileArea" style="display: flex; align-items: center; gap: 8px;"></div>
+            </div>
+        </div>
+
+        <!-- Global Reminder Form Modal -->
+        <div id="formModal" class="modal-glass">
+            <div id="formSection" class="form-section">
+                <div class="form-group"><label data-i18n="titleRequired">Título *</label><input type="text"
+                        id="inputTitle" class="glass-btn" style="width:100%; text-align:left;"></div>
+                <div class="form-group">
+                    <label data-i18n="description">Descrição</label>
+                    <div class="editor-container">
+                        <div class="editor-toolbar">
+                            <button type="button" data-action="format" data-cmd="bold" title="Negrito"
+                                data-i18n-title="bold"><b>B</b></button>
+                            <button type="button" data-action="format" data-cmd="italic" title="Itálico"
+                                data-i18n-title="italic"><i>I</i></button>
+                            <button type="button" data-action="format" data-cmd="insertUnorderedList" title="Lista"
+                                data-i18n-title="list">•</button>
+                        </div>
+                        <div id="inputDesc" class="editor-content" contenteditable="true"
+                            placeholder="Adicione uma descrição..." data-i18n-placeholder="descPlaceholder"></div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <label style="margin: 0;" data-i18n="checklist">Checklist</label>
+                        <label class="view-checklist-item" style="padding: 0; cursor: pointer; display: flex;">
+                            <input type="checkbox" id="checklistNumberedInput" data-action="toggle-checklist-numbered">
+                            <span data-i18n="numberedChecklist" style="font-size: 14px; color: var(--text-main);">Lista Numerada</span>
+                        </label>
+                    </div>
+                    <div id="checklistContainer"></div><button id="btnAddChecklistItem" class="glass-btn"
+                        style="width:100%; margin-top:8px;" data-i18n="addChecklistItem">+ Adicionar Item à
+                        Lista</button>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px;">
+                    <div class="form-group">
+                        <label data-i18n="dueDate">Data Limite</label>
+                        <input type="date" id="dueDateInput" class="glass-btn" style="width:100%;"
+                            onclick="this.showPicker()">
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="repeat">Repetir</label>
+                        <select id="repeatSelect" class="glass-btn" style="width:100%;">
+                            <option value="none" data-i18n="noRepeat">Não repetir</option>
+                            <option value="daily" data-i18n="daily">Diário</option>
+                            <option value="weekly" data-i18n="weekly">Semanal</option>
+                            <option value="monthly" data-i18n="monthly">Mensal</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="tags">Tags</label>
+                        <button id="btnSelectTags" class="glass-btn" style="width:100%;"
+                            data-i18n="selectTags">Selecionar Tags</button>
+                    </div>
+                </div>
+                <div id="selectedTagsDisplay" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px;"></div>
+                <div class="form-group"><label data-i18n="links">Links</label>
+                    <div id="linksContainer"></div><button id="btnAddLink" class="glass-btn"
+                        style="width:100%; margin-top:8px;" data-i18n="addLink">+ Adicionar Link</button>
+                </div>
+
+                <div class="form-group" style="margin-top: 12px;" id="form-kanban-group">
+                    <label class="view-checklist-item" style="padding: 0; cursor: pointer; display: flex;">
+                        <input type="checkbox" id="showInKanbanInput">
+                        <span data-i18n="showInKanban" style="font-size: 14px; color: var(--text-main);">Aparecer no
+                            Kanban</span>
+                    </label>
+                </div>
+
+                <div class="form-section-divider" style="margin: 24px 0; border-top: 1px solid var(--border-glass);">
+                </div>
+
+                <div class="form-group" id="form-password-group">
+                    <label data-i18n="passwordLock">Bloqueio por Senha</label>
+                    <input type="password" id="reminderPassword" class="glass-btn" style="width:100%; text-align:left;"
+                        placeholder="Senha para proteger este lembrete" data-i18n-placeholder="passwordLabel">
+                </div>
+
+                <!-- Images -->
+                <div class="form-group">
+                    <label>Imagens (Máx 800px)</label>
+                    <div class="custom-file-input">
+                        <label for="imageInput" class="glass-btn"
+                            style="width: 100%; border-style: dashed; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                <polyline points="21 15 16 10 5 21"></polyline>
+                            </svg>
+                            Adicionar Imagens
+                        </label>
+                        <input type="file" id="imageInput" accept="image/*" multiple style="display: none;">
+                    </div>
+                    <div id="imagePreviewContainer"
+                        style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;"></div>
+                </div>
+
+                <div style="display:flex; gap:12px; justify-content:flex-end;">
+                    <button class="glass-btn" data-action="toggle-form" data-i18n="close">Fechar</button>
+                    <button id="btnClear" class="glass-btn" data-i18n="clear">Limpar</button>
+                    <button id="btnAdd" class="glass-btn primary" data-i18n="saveReminder">Salvar Lembrete</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- View Dashboard -->
+        <section id="view-dashboard" class="view-section active">
+            <h1 style="margin-bottom: 20px;" data-i18n="dashboard">Dashboard</h1>
+
+            <div class="dashboard-previews">
+                <div id="dash-streams-preview" class="smart-card-dash" data-view="streams"></div>
+                <div id="dash-news-preview" class="smart-card-dash" data-view="news"></div>
+            </div>
+
+            <div class="dashboard-container">
+                <!-- Left Column: Reminders -->
+                <div class="dashboard-left">
+                    <div class="dashboard-column-title">
+                        <h3 data-i18n="recentReminders">Lembretes Recentes</h3>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <div
+                                style="display: flex; gap: 4px; background: var(--border-glass); padding: 2px; border-radius: 8px;">
+                                <button class="view-toggle-btn" data-action="set-dash-view" data-view="list"
+                                    title="Visualizar em Lista" data-i18n-title="viewList"
+                                    style="display: flex; align-items: center; justify-content: center; padding: 6px; border: none;">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="8" y1="6" x2="21" y2="6"></line>
+                                        <line x1="8" y1="12" x2="21" y2="12"></line>
+                                        <line x1="8" y1="18" x2="21" y2="18"></line>
+                                        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                                    </svg>
+                                </button>
+                                <button class="view-toggle-btn active" data-action="set-dash-view" data-view="columns"
+                                    title="Visualizar em Colunas" data-i18n-title="viewColumns"
+                                    style="display: flex; align-items: center; justify-content: center; padding: 6px; border: none;">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="3" y="3" width="7" height="7"></rect>
+                                        <rect x="14" y="3" width="7" height="7"></rect>
+                                        <rect x="14" y="14" width="7" height="7"></rect>
+                                        <rect x="3" y="14" width="7" height="7"></rect>
+                                    </svg>
+                                </button>
+                            </div>
+                            <button class="glass-btn" style="padding: 6px 12px; font-size: 12px;"
+                                data-action="toggle-form" data-i18n="new">+ Novo</button>
+                        </div>
+                    </div>
+                    <!-- Dashboard Tag Filter -->
+                    <div id="dash-tag-filter" class="tag-filter-container">
+                    </div>
+                    <div id="dash-reminders-recent" class="reminders-list grid-view"></div>
+                </div>
+
+                <!-- Right Column: Shortcuts -->
+                <div class="dashboard-right">
+                    <div class="dashboard-column-title">
+                        <h3 data-i18n="quickShortcuts">Atalhos Rápidos</h3>
+                        <button class="glass-btn" style="padding: 6px 12px; font-size: 12px;"
+                            data-action="open-shortcut-modal" data-i18n="new">+ Novo</button>
+                    </div>
+                    <div id="dash-shortcut-grid" class="shortcut-list-narrow"></div>
+
+                    <div class="dashboard-column-title" style="margin-top: 32px;">
+                        <h3 data-i18n="pipApps">PiP Apps</h3>
+                        <button class="glass-btn" style="padding: 6px 12px; font-size: 12px;"
+                            data-action="open-pipapp-modal" data-i18n="new">+ Novo</button>
+                    </div>
+                    <div id="dash-pipapp-grid" class="shortcut-list-narrow"
+                        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 8px;">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- View Streams -->
+        <section id="view-streams" class="view-section">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+                <h1 data-i18n="streams">Streams</h1>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <button id="btnOpenMultiView" class="glass-btn primary"
+                        style="padding: 8px 16px; font-weight: 600; display: flex; align-items: center; gap: 8px;"
+                        data-i18n-title="activateMultiView">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="12" y1="3" x2="12" y2="21"></line>
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                        </svg>
+                        <span data-i18n="multiView">Multi-View</span>
+                    </button>
+                    <button id="btnToggleStreamEdit" class="glass-btn" style="padding: 8px; color: var(--text-dim);"
+                        title="Gerenciar" data-i18n-title="manage">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                    </button>
+                    <button id="btnRefreshStreams" class="glass-btn" style="padding: 8px; color: var(--text-dim);"
+                        data-i18n-title="refresh">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="23 4 23 10 17 10"></polyline>
+                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <p style="color: var(--text-dim); margin-bottom: 24px; font-size: 14px; line-height: 1.6;"
+                data-i18n="streamsDescription">
+                Acompanhe seus canais favoritos do Twitch, YouTube e Kick em tempo real. O status é atualizado
+                automaticamente conforme o intervalo definido.
+            </p>
+
+            <div
+                style="background: rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 8px; margin-bottom: 24px; font-size: 12px; color: var(--text-dim); display: flex;flex-wrap: wrap;">
+                <div style="margin-bottom: 4px;" data-i18n="streamExampleTwitch">Twitch: twitch.tv/nome_do_canal</div>
+                <span style="padding: 0 10px;"> - </span>
+                <div style="margin-bottom: 4px;" data-i18n="streamExampleYoutube">YouTube: youtube.com/@nome_do_canal
+                </div><span style="padding: 0 10px;"> - </span>
+                <div data-i18n="streamExampleKick">Kick: kick.com/nome_do_canal</div>
+            </div>
+
+            <div class="form-section" style="padding: 12px 16px; border-radius: 14px; margin-bottom: 24px;">
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <div
+                        style="color: var(--primary); background: rgba(var(--primary-rgb), 0.1); width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M23 7l-7 5 7 5V7z"></path>
+                            <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                        </svg>
+                    </div>
+                    <input type="text" id="streamUrl" placeholder="URL (Twitch, YT, Kick)" class="glass-btn"
+                        style="flex: 1; text-align: left; padding: 10px 16px; margin: 0;"
+                        data-i18n-placeholder="streamUrlPlaceholder">
+                    <button id="btnSaveStream" class="glass-btn primary" style="padding: 10px 20px; font-weight: 700;"
+                        data-i18n="new">+ Novo</button>
+                </div>
+            </div>
+
+            <div id="streamsGrid" class="streams-grid">
+                <!-- Streams follow here -->
+            </div>
+        </section>
+
+        <!-- View PiP Apps -->
+        <section id="view-pipapps" class="view-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <h1 style="margin: 0;" data-i18n="pipApps">PiP Apps</h1>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <button class="glass-btn" id="btnEditPipApps" title="Gerenciar" data-i18n-title="manage">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                    </button>
+                    <button class="glass-btn primary" id="btnNewPipApp" data-i18n="new">+ Novo</button>
+                </div>
+            </div>
+            <p style="color: var(--text-dim); font-size: 14px; margin-bottom: 24px; max-width: 800px; line-height: 1.6;"
+                data-i18n="pipAppsDescription">
+                Abra qualquer site em modo Picture-in-Picture. Perfeito para deixar seus agentes de IA, calculadoras,
+                chats ou documentações sempre visíveis enquanto trabalha.
+            </p>
+
+            <div id="pipAppsGrid" class="streams-grid">
+                <!-- PiP Apps cards will be here -->
+            </div>
+        </section>
+
+        <!-- View News -->
+        <section id="view-news" class="view-section">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+                <h1 data-i18n="news">Notícias</h1>
+                <div style="display: flex; gap: 8px;">
+                    <button class="glass-btn" data-action="navigate-to-settings-news"
+                        title="Adicionar Fontes de Notícia" data-i18n-title="addNewsSource">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                    </button>
+                    <button id="btnRefreshNews" class="glass-btn" data-i18n-title="refresh">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="23 4 23 10 17 10"></polyline>
+                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- News Site Filter Tags -->
+            <div id="news-site-filter" class="tag-filter-container" style="margin-bottom: 24px;">
+                <!-- Tags serão inseridas via JS -->
+            </div>
+
+            <div id="newsGrid" class="news-grid">
+                <!-- News cards here -->
+            </div>
+            <div id="newsLoader" style="display: none; text-align: center; padding: 40px;">
+                <div class="loader-spinner"></div>
+                <p style="margin-top: 16px; color: var(--text-dim);" data-i18n="fetchingNews">Buscando notícias...</p>
+            </div>
+        </section>
+
+        <!-- View Sessions -->
+        <section id="view-sessions" class="view-section">
+            <h1 style="margin-bottom: 8px;" data-i18n="sessionsTitle">Sessões Salvas</h1>
+            <p style="color: var(--text-dim); margin-bottom: 24px; font-size: 14px;" data-i18n="sessionsDescription">
+                Salve a sua sessão atual do navegador para reabrí-la mais tarde. Abas, janelas e até mesmo a posição
+                delas nos seus monitores serão mantidas.</p>
+
+            <div class="form-section" style="margin-bottom: 24px;">
+                <div style="display: flex; gap: 12px; align-items: flex-end;">
+                    <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                        <label data-i18n="sessionName">Nome da Sessão Atual</label>
+                        <input type="text" id="sessionNameInput" placeholder="Ex: Pesquisa de projeto"
+                            style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border-glass); background: var(--bg-glass); color: var(--text-main); outline: none;">
+                    </div>
+                    <button id="btnSaveSession" class="glass-btn primary" style="padding: 12px 24px;"
+                        data-i18n="saveSession">Salvar Sessão Atual</button>
+                </div>
+            </div>
+
+            <div id="sessionsGrid" class="reminders-row" style="margin-top: 16px;">
+                <!-- Sessões salvas vão ser injetadas aqui -->
+            </div>
+        </section>
+
+
+
+        <!-- View Calendar -->
+        <section id="view-calendar" class="view-section">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+                <h1 data-i18n="calendar">Calendário</h1>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <button id="prevMonth" class="glass-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    </button>
+                    <h3 id="currentMonthDisplay" style="margin: 0; min-width: 150px; text-align: center;">Mês Ano</h3>
+                    <button id="nextMonth" class="glass-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div id="calendar-tag-filter" class="tag-filter-container"></div>
+
+            <div class="calendar-container"
+                style="background: var(--bg-glass); border-radius: 20px; border: 1px solid var(--border-glass); padding: 20px; min-height: 600px; display: flex; flex-direction: column;">
+                <div class="calendar-header-days"
+                    style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin-bottom: 10px; text-align: center; font-weight: 700; color: var(--primary); font-size: 13px;">
+                    <div data-i18n="sun">DOM</div>
+                    <div data-i18n="mon">SEG</div>
+                    <div data-i18n="tue">TER</div>
+                    <div data-i18n="wed">QUA</div>
+                    <div data-i18n="thu">QUI</div>
+                    <div data-i18n="fri">SEX</div>
+                    <div data-i18n="sat">SÁB</div>
+                </div>
+                <div id="calendarGrid"
+                    style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; flex: 1;">
+                    <!-- Calendar days here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- View Reminders -->
+        <section id="view-reminders" class="view-section">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+                <h1 data-i18n="myReminders">Meus Lembretes</h1>
+                <button class="glass-btn primary" data-action="toggle-form" data-i18n="createNew">+ Criar Novo</button>
+            </div>
+
+            <div class="stat-grid" style="margin-bottom: 24px;">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(0, 192, 128, 0.1); color: var(--primary);">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                        </svg>
+                    </div>
+                    <div>
+                        <p style="color:var(--text-dim); font-size:12px;" data-i18n="total">Total</p>
+                        <h2 id="count-total">0</h2>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(244, 67, 54, 0.1); color: var(--accent-error);">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                    </div>
+                    <div>
+                        <p style="color:var(--text-dim); font-size:12px;" data-i18n="overdue">Atrasados</p>
+                        <h2 id="count-overdue">0</h2>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(0, 255, 157, 0.1); color: var(--accent-success);">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                    </div>
+                    <div>
+                        <p style="color:var(--text-dim); font-size:12px;" data-i18n="completed">Concluídos</p>
+                        <h2 id="count-completed">0</h2>
+                    </div>
+                </div>
+            </div>
+
+
+            <div id="reminders-tag-filter" class="tag-filter-container"></div>
+
+            <div id="full-reminders-grid" class="reminders-row"></div>
+        </section>
+
+        <!-- View Kanban Wrapper (Alternative for showView compatibility) -->
+        <section id="view-kanban" class="view-section">
+            <!-- Este section apenas ativa o contêiner interno dentro de view-reminders se preferir, 
+                  ou podemos mover tudo para cá. Vamos mover para manter limpo. -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+                <h1 data-i18n="kanban">Kanban</h1>
+                <button class="glass-btn primary" data-action="toggle-form" data-i18n="createNew">+ Criar Novo</button>
+            </div>
+
+            <p style="color: var(--text-dim); margin-bottom: 24px; font-size: 14px;" data-i18n="kanbanDescription"></p>
+
+            <div class="stat-grid" style="margin-bottom: 24px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px;">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(0, 192, 128, 0.1); color: var(--primary);">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+                    </div>
+                    <div>
+                        <p style="color:var(--text-dim); font-size:11px;" data-i18n="total">Total</p>
+                        <h2 id="kanban-count-total" style="font-size: 18px;">0</h2>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(244, 67, 54, 0.1); color: var(--accent-error);">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    </div>
+                    <div>
+                        <p style="color:var(--text-dim); font-size:11px;" data-i18n="overdue">Atrasados</p>
+                        <h2 id="kanban-count-overdue" style="font-size: 18px;">0</h2>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(255, 193, 7, 0.1); color: #FFC107;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle></svg>
+                    </div>
+                    <div>
+                        <p style="color:var(--text-dim); font-size:11px;" data-i18n="todo">A Fazer</p>
+                        <h2 id="kanban-count-todo" style="font-size: 18px;">0</h2>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(33, 150, 243, 0.1); color: #2196F3;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path><path d="M12 6v6l4 2"></path></svg>
+                    </div>
+                    <div>
+                        <p style="color:var(--text-dim); font-size:11px;" data-i18n="inProgress">Fazendo</p>
+                        <h2 id="kanban-count-inprogress" style="font-size: 18px;">0</h2>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(0, 255, 157, 0.1); color: var(--accent-success);">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </div>
+                    <div>
+                        <p style="color:var(--text-dim); font-size:11px;" data-i18n="completed">Concluídos</p>
+                        <h2 id="kanban-count-completed" style="font-size: 18px;">0</h2>
+                    </div>
+                </div>
+            </div>
+
+            <div id="kanban-tag-filter" class="tag-filter-container" style="margin-bottom: 20px;"></div>
+
+            <div class="kanban-board">
+                <!-- Coluna A Fazer -->
+                <div class="kanban-column" data-status="todo">
+                    <div class="kanban-column-header">
+                        <div class="kanban-column-title">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            <span data-i18n="todoColumn">A Fazer</span>
+                        </div>
+                        <span class="kanban-column-count" id="count-kanban-todo">0</span>
+                    </div>
+                    <div class="kanban-list" id="list-kanban-todo" data-status="todo"></div>
+                </div>
+
+                <!-- Coluna Em Progresso -->
+                <div class="kanban-column" data-status="in-progress">
+                    <div class="kanban-column-header">
+                        <div class="kanban-column-title">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path
+                                    d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83">
+                                </path>
+                            </svg>
+                            <span data-i18n="inProgressColumn">Em Progresso</span>
+                        </div>
+                        <span class="kanban-column-count" id="count-kanban-in-progress">0</span>
+                    </div>
+                    <div class="kanban-list" id="list-kanban-in-progress" data-status="in-progress"></div>
+                </div>
+
+                <!-- Coluna Arquivado -->
+                <div class="kanban-column" data-status="completed">
+                    <div class="kanban-column-header">
+                        <div class="kanban-column-title">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            <span data-i18n="archivedColumn">Arquivado</span>
+                        </div>
+                        <span class="kanban-column-count" id="count-kanban-completed">0</span>
+                    </div>
+                    <div class="kanban-list" id="list-kanban-completed" data-status="completed"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-vault" class="view-section">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <div class="stat-icon" style="background: rgba(0, 192, 128, 0.1); color: var(--primary);">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                    </div>
+                    <h1 data-i18n="vault">Cofre</h1>
+                </div>
+                <button class="glass-btn primary" data-action="toggle-form" data-i18n="createNew">+ Criar Novo</button>
+            </div>
+
+            
+            <div id="vault-tag-filter" class="tag-filter-container" style="margin-bottom: 20px;"></div>
+
+            <div id="vault-reminders-grid" class="reminders-row"></div>
+        </section>
+
+        <section id="view-shortcuts" class="view-section">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+                <h1 data-i18n="allShortcuts">Todos os Atalhos</h1>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <button id="btnToggleShortcutEdit" class="glass-btn" style="padding: 8px; color: var(--text-dim);"
+                        title="Gerenciar" data-i18n-title="manage">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                    </button>
+                    <button class="glass-btn" data-action="open-category-modal" data-i18n="manageCategories">Gerenciar
+                        Categorias</button>
+                    <button class="glass-btn primary" data-action="open-shortcut-modal" data-i18n="new">+ Novo</button>
+                </div>
+            </div>
+            <div id="full-shortcut-grid" class="shortcut-grid"></div>
+        </section>
+
+        <!-- View Contacts -->
+        <section id="view-contacts" class="view-section">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+                <h1 data-i18n="contacts">Contatos</h1>
+                <div style="display:flex; gap:12px; align-items:center;">
+                    <div class="glass-btn-group" style="display:flex; background:rgba(255,255,255,0.03); border:1px solid var(--border-glass); border-radius:12px; padding:2px;">
+                        <button class="glass-btn active" id="btnContactsViewGrid" data-action="set-contacts-layout" data-layout="grid" style="padding:8px 12px; border:none; border-radius:10px; display:flex; align-items:center; justify-content:center; cursor:pointer;" title="Ver como Grid/Lista">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="14" width="7" height="7"></rect>
+                                <rect x="3" y="14" width="7" height="7"></rect>
+                            </svg>
+                        </button>
+                        <button class="glass-btn" id="btnContactsViewFolders" data-action="set-contacts-layout" data-layout="folders" style="padding:8px 12px; border:none; border-radius:10px; display:flex; align-items:center; justify-content:center; cursor:pointer;" title="Ver como Pastas">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <button class="glass-btn primary" id="btnNewContact" data-i18n="newContact">+ Novo Contato</button>
+                </div>
+            </div>
+
+            <div class="stat-grid" style="margin-bottom: 24px;">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(0, 192, 128, 0.1); color: var(--primary);">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <p style="color:var(--text-dim); font-size:12px;" data-i18n="total">Total</p>
+                        <h2 id="contacts-count-total">0</h2>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(255, 193, 7, 0.1); color: #FFC107;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                            <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                        </svg>
+                    </div>
+                    <div>
+                        <p style="color:var(--text-dim); font-size:12px;" data-i18n="tags">Tags</p>
+                        <h2 id="contacts-count-tags">0</h2>
+                    </div>
+                </div>
+            </div>
+
+            <div id="contacts-tag-filter" class="tag-filter-container" style="margin-bottom: 24px;"></div>
+
+            <div id="contactsGrid" class="reminders-row">
+                <!-- Contacts will be injected here -->
+            </div>
+        </section>
+
+        <!-- View Share -->
+        <section id="view-share" class="view-section">
+            <h1 style="margin-bottom: 24px;" data-i18n="shareTitle">Apoio e Indicação</h1>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 24px; max-width: 900px;">
+                <!-- Donation Section -->
+                <div class="form-section" style="margin-bottom: 0;">
+                    <h3 style="margin-bottom: 16px;" data-i18n="donationTitle">Apoie o Desenvolvimento</h3>
+                    <p style="color: var(--text-dim); margin-bottom: 24px; font-size: 14px; line-height: 1.5;" data-i18n="donationDescription">
+                        Se você gosta da extensão e quer apoiar o desenvolvedor, considere fazer uma doação.
+                    </p>
+                    <div style="display: flex; flex-direction: column; gap: 20px; align-items: center;">
+                        <a href="https://www.buymeacoffee.com/endrigo" target="_blank">
+                            <img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=☕&slug=endrigo&button_colour=FFDD00&font_colour=000000&font_family=Poppins&outline_colour=000000&coffee_colour=ffffff" alt="Buy Me A Coffee" style="height: 44px !important; width: auto !important; border-radius: 8px;" />
+                        </a>
+                        
+                        <div style="text-align: center; width: 100%; border-top: 1px solid var(--border-glass); padding-top: 20px; margin-top: 10px;">
+                            <img src="icons/pix_qr.png" alt="PIX QR Code" style="width: 160px; height: 160px; border-radius: 12px; margin-bottom: 16px; background: white; padding: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                <span style="font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px;" data-i18n="pixKeyLabel">Chave PIX (E-mail):</span>
+                                <code style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; font-size: 13px; color: var(--primary); font-family: monospace; border: 1px solid var(--border-glass);">endrigocosta@hotmail.com</code>
+                                <button class="glass-btn" id="btnCopyPix" style="margin-top: 8px; padding: 10px 16px; width: 100%; font-weight: 600;" data-i18n="copyPix">Copiar Chave PIX</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Referral Section -->
+                <div class="form-section" style="margin-bottom: 0;">
+                    <h3 style="margin-bottom: 16px;" data-i18n="share">Indique a Extensão</h3>
+                    <p style="color: var(--text-dim); margin-bottom: 24px; font-size: 14px; line-height: 1.5;" data-i18n="shareDescription">Gostou do Remind.hub? Compartilhe com seus amigos!</p>
+                    <div style="display: flex; flex-direction: column; gap: 16px;">
+                        <button class="glass-btn primary" id="btnShareWhatsApp"
+                            style="display: flex; align-items: center; justify-content: center; gap: 10px; padding: 14px; font-weight: 600;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 1 1-7.6-10.6 8.38 8.38 0 0 1 3.9.9L22 2l-2.5 6.5A8.38 8.38 0 0 1 21 11.5Z"></path>
+                            </svg>
+                            <span data-i18n="shareWhatsApp">Compartilhar via WhatsApp</span>
+                        </button>
+                        <button class="glass-btn" id="btnShareEmail"
+                            style="display: flex; align-items: center; justify-content: center; gap: 10px; padding: 14px; font-weight: 600;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                <polyline points="22,6 12,13 2,6"></polyline>
+                            </svg>
+                            <span data-i18n="shareEmail">Compartilhar via E-mail</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- View Settings -->
+        <section id="view-settings" class="view-section">
+            <h1 style="margin-bottom: 24px;" data-i18n="settings">Configurações</h1>
+
+            <div class="settings-nav"
+                style="display: flex; gap: 12px; margin-bottom: 24px; border-bottom: 1px solid var(--border-glass); padding-bottom: 12px; overflow-x: auto;">
+                <button class="settings-nav-btn active" data-tab="tab-geral" data-action="switch-settings-tab"
+                    data-i18n="general">Geral</button>
+                <button class="settings-nav-btn" data-tab="tab-noticias" data-action="switch-settings-tab"
+                    data-i18n="news">Notícias</button>
+                <button class="settings-nav-btn" data-tab="tab-streams" data-action="switch-settings-tab"
+                    data-i18n="streams">Streams</button>
+                <button class="settings-nav-btn" data-tab="tab-sobre" data-action="switch-settings-tab"
+                    data-i18n="about">Sobre</button>
+            </div>
+
+            <div class="settings-tab-content active" id="tab-geral"
+                style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; animation: fadeIn 0.3s ease-out;">
+
+                <div class="settings-column" style="display: flex; flex-direction: column; gap: 24px;">
+                    <div class="form-section" style="margin-bottom: 0;">
+                        <h3 style="margin-bottom: 16px;" data-i18n="language">Idioma</h3>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <div class="custom-select" id="customLanguageSelect">
+                                <div class="custom-select-trigger glass-btn">
+                                    <span id="currentLanguageDisplay">Português (Brasil)</span>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </div>
+                                <div class="custom-options">
+                                    <div class="custom-option" data-value="pt" data-action="select-language">Português
+                                        (Brasil)</div>
+                                    <div class="custom-option" data-value="en" data-action="select-language">English
+                                        (US)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section" style="margin-bottom: 0;">
+                        <h3 style="margin-bottom: 16px;" data-i18n="appearance">Aparência</h3>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label data-i18n="accentColor">Cor de Destaque</label>
+                            <div class="color-picker" id="accentColorPicker">
+                                <div class="color-dot active" data-color="#00C080" style="background: #00C080;"
+                                    title="Verde"></div>
+                                <div class="color-dot" data-color="#007AFF" style="background: #007AFF;" title="Azul">
+                                </div>
+                                <div class="color-dot" data-color="#AF52DE" style="background: #AF52DE;" title="Roxo">
+                                </div>
+                                <div class="color-dot" data-color="#FF9500" style="background: #FF9500;"
+                                    title="Laranja"></div>
+                                <div class="color-dot" data-color="#FF2D55" style="background: #FF2D55;"
+                                    title="Vermelho"></div>
+                                <div class="color-dot" data-color="#FFCC00" style="background: #FFCC00;"
+                                    title="Amarelo"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section" style="margin-bottom: 0;">
+                        <h3 style="margin-bottom: 16px;" data-i18n="notificationSettings">Notificações</h3>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label data-i18n="notificationTime">Horário da Notificação</label>
+                            <input type="time" id="notificationTime" value="09:00" class="glass-btn"
+                                style="width: 100%; text-align: left;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-column" style="display: flex; flex-direction: column; gap: 24px;">
+                    <div class="form-section"
+                        style="margin-bottom: 0; border: 1px solid var(--primary-glow); background: rgba(var(--primary-rgb), 0.03);">
+                        <h3 style="margin-bottom: 16px;" data-i18n="system">Sistema</h3>
+                        <button id="btnCheckUpdate" class="glass-btn"
+                            style="width: 100%; background: linear-gradient(135deg, var(--primary), var(--primary-glow)); color: white; font-weight: 700; border: none; box-shadow: 0 4px 15px var(--primary-glow); cursor: pointer;"
+                            data-i18n="checkForUpdates">Verificar Atualizações</button>
+                    </div>
+
+                    <div class="form-section" style="margin-bottom: 0;">
+                        <h3 style="margin-bottom: 16px;" data-i18n="dataManagement">Gerenciamento de Dados</h3>
+                        <p style="color: var(--text-dim); margin-bottom: 20px; font-size: 14px;"
+                            data-i18n="dataDescription">
+                            Você pode exportar seus
+                            lembretes e atalhos para um arquivo ou importar de um backup anterior.</p>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <button class="glass-btn" id="btnExportData"
+                                style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                <span data-i18n="exportJson">Exportar JSON</span>
+                            </button>
+                            <button class="glass-btn" id="btnImportData"
+                                style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                                </svg>
+                                <span data-i18n="importJson">Importar JSON</span>
+                            </button>
+                        </div>
+                        <input type="file" id="importFileInput" style="display: none;" accept=".json">
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-tab-content" id="tab-noticias"
+                style="display: none; grid-template-columns: repeat(auto-fit, minmax(600px, 1fr)); gap: 24px; animation: fadeIn 0.3s ease-out;">
+                <div class="form-section">
+                    <h3 style="margin-bottom: 16px;" data-i18n="newsSources">Fontes de Notícias</h3>
+                    <div style="background: rgba(244, 67, 54, 0.1); border: 1px solid var(--accent-error); color: var(--text-main); padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 13px; line-height: 1.5;"
+                        data-i18n="newsAlert">
+                        <strong>Aviso:</strong> Você pode adicionar quase qualquer blog para a extensão tentar capturar
+                        as resenhas e notícias, mas o funcionamento <strong>não é 100% garantido</strong>, pois alguns
+                        sites fogem dos padrões HTML tradicionais. O ideal é <strong>adicionar os links no formato Feed
+                            RSS (.xml)</strong> para compatibilidade absoluta.
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label data-i18n="addNewsSource">Adicionar Fonte de Notícias</label>
+                        <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+                            <input type="text" id="newsSourceUrl" placeholder="URL do site ou RSS" class="glass-btn"
+                                style="flex: 1; text-align: left;" data-i18n-placeholder="newsUrlPlaceholder">
+                            <button id="btnAddNewsSource" class="glass-btn primary" data-i18n="add">Add</button>
+                        </div>
+                        <div id="newsSourcesList" style="display: flex; flex-direction: column; gap: 8px;">
+                            <!-- Sources list here -->
+                        </div>
+                        <div class="form-group" style="margin-top: 20px; margin-bottom: 0;">
+                            <label style="display: flex; justify-content: space-between;">
+                                <span data-i18n="newsRefreshInterval">Intervalo de Atualização (Notícias)</span>
+                                <span id="newsRefValueDisplay">60 min</span>
+                            </label>
+                            <input type="range" id="newsRefreshInterval" min="5" max="120" step="5" value="60"
+                                class="glass-btn" style="width: 100%; margin-top: 10px; cursor: pointer;">
+                            <div
+                                style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-dim); margin-top: 4px;">
+                                <span>5 min</span>
+                                <span>120 min</span>
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-top: 20px; margin-bottom: 0;">
+                            <label style="display: flex; justify-content: space-between;">
+                                <span data-i18n="newsPerSiteLabel">Notícias por site</span>
+                                <span id="newsPerSiteDisplay">5 por site</span>
+                            </label>
+                            <input type="range" id="newsPerSiteLimit" min="5" max="10" step="1" value="5"
+                                class="glass-btn" style="width: 100%; margin-top: 10px; cursor: pointer;">
+                            <div
+                                style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-dim); margin-top: 4px;">
+                                <span>5</span>
+                                <span>10</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-tab-content" id="tab-streams"
+                style="display: none; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 24px; animation: fadeIn 0.3s ease-out;">
+                <div class="form-section">
+                    <h3 style="margin-bottom: 16px;" data-i18n="streams">Monitor de Streams</h3>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="display: flex; justify-content: space-between;">
+                            <span data-i18n="checkInterval">Intervalo de Verificação</span>
+                            <span id="intervalValueDisplay">5 min</span>
+                        </label>
+                        <input type="range" id="streamCheckInterval" min="1" max="10" step="1" value="5"
+                            class="glass-btn" style="width: 100%; margin-top: 10px; cursor: pointer;">
+                        <div
+                            style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-dim); margin-top: 4px;">
+                            <span>1 min</span>
+                            <span>10 min</span>
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-top: 20px; margin-bottom: 0; display: none;">
+                        <label data-i18n="youtubePlayerMode">Modo do Player YouTube</label>
+                        <select id="youtubePlayerMode" class="glass-btn" style="width: 100%;">
+                            <option value="standard" selected>Padrão (Bypass Inteligente v2)</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-top: 20px; margin-bottom: 0;">
+                        <div class="view-checklist-item" style="padding: 0; cursor: default;">
+                            <input type="checkbox" id="enableSmartAdd" checked>
+                            <span data-i18n="enableSmartAdd"
+                                style="font-size: 14px; text-transform: none; color: var(--text-main);">Habilitar
+                                Captura Inteligente</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-tab-content" id="tab-sobre"
+                style="display: none; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 24px; animation: fadeIn 0.3s ease-out;">
+                <div class="form-section" style="text-align: center;">
+                    <div
+                        style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;">
+                        <img src="icons/icon128.png" width="80" height="80" style="border-radius: 16px;">
+                    </div>
+                    <h2 style="margin-bottom: 8px;">Remind.hub</h2>
+                    <p id="aboutVersion" style="color: var(--text-dim); margin-bottom: 30px;"></p>
+
+                    <h3 style="margin-bottom: 16px;" data-i18n="suggestImprovement">Sugerir Melhoria</h3>
+                    <div id="suggestionForm">
+                        <div class="form-group">
+                            <label data-i18n="yourName">Seu Nome</label>
+                            <input type="text" id="suggestionName" class="glass-btn"
+                                style="width: 100%; text-align: left;" placeholder="Como quer ser chamado?"
+                                data-i18n-placeholder="placeholderName">
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="yourEmail">E-mail (opcional)</label>
+                            <input type="email" id="suggestionEmail" class="glass-btn"
+                                style="width: 100%; text-align: left;" placeholder="Seu e-mail para resposta"
+                                data-i18n-placeholder="placeholderEmail">
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="feedbackMessage">Mensagem ou Feedback *</label>
+                            <textarea id="suggestionMessage" class="glass-btn"
+                                style="width: 100%; text-align: left; height: 100px; padding: 12px; resize: none;"
+                                placeholder="Descreva sua sugestão ou reporte um erro..."
+                                data-i18n-placeholder="placeholderFeedback"></textarea>
+                        </div>
+                        <button id="btnSendSuggestion" class="glass-btn primary" style="width: 100%; margin-top: 8px;"
+                            data-i18n="sendSuggestion">Enviar Sugestão</button>
+                    </div>
+                    <p style="font-size: 13px; color: var(--text-dim); margin-top: 30px;" data-i18n="developedWith">
+                        Desenvolvido com ❤️ para produtividade máxima.</p>
+                </div>
+
+                <div class="form-section">
+                    <h3 style="margin-bottom: 16px;" data-i18n="versionHistory">Histórico de Versões</h3>
+                    <div id="changelog-container" class="changelog-container">
+                        <!-- Changelog gerado via JS -->
+                    </div>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+
+    <!-- Modals -->
+    <div class="modal-glass" id="pipAppModal">
+        <div class="modal-content-glass">
+            <h2 id="pipAppModalTitle" style="margin-bottom:20px;" data-i18n="newPipApp">Novo PiP App</h2>
+            <div class="form-group">
+                <label data-i18n="appName">Nome do App</label>
+                <input type="text" id="pipAppName" class="glass-btn" style="width:100%; text-align:left;">
+            </div>
+            <div class="form-group">
+                <label data-i18n="url">URL</label>
+                <input type="text" id="pipAppUrl" class="glass-btn" style="width:100%; text-align:left;"
+                    placeholder="https://...">
+            </div>
+            <div style="display:flex; gap:12px; justify-content:flex-end;">
+                <button class="glass-btn" data-action="close-pipapp-modal" data-i18n="cancel">Cancelar</button>
+                <button id="btnSavePipApp" class="glass-btn primary" data-i18n="save">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-glass" id="shortcutModal">
+        <div class="modal-content-glass">
+            <h2 style="margin-bottom:20px;" data-i18n="newShortcut">Novo Atalho</h2>
+            <div class="form-group"><label data-i18n="title">Título</label><input type="text" id="shortcutTitle"
+                    class="glass-btn" style="width:100%; text-align:left;"></div>
+            <div class="form-group"><label data-i18n="url">URL</label><input type="text" id="shortcutUrl"
+                    class="glass-btn" style="width:100%; text-align:left;" placeholder="https://..."></div>
+            <div class="form-group">
+                <label data-i18n="category">Categoria</label>
+                <div class="custom-select" id="customShortcutCategory">
+                    <div class="custom-select-trigger glass-btn">
+                        <span id="currentShortcutCategoryDisplay">Geral</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </div>
+                    <div class="custom-options" id="shortcutCategoryOptions">
+                        <!-- Categorias serão inseridas aqui -->
+                    </div>
+                </div>
+                <input type="hidden" id="shortcutCategory" value="default">
+            </div>
+            <div style="display:flex; gap:12px; justify-content:flex-end;">
+                <button class="glass-btn" data-action="close-shortcut-modal" data-i18n="cancel">Cancelar</button>
+                <button id="btnSaveShortcut" class="glass-btn primary" data-i18n="save">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-glass" id="categoryModal">
+        <div class="modal-content-glass">
+            <h2 style="margin-bottom:20px;" data-i18n="manageCategories">Gerenciar Categorias</h2>
+            <div id="categoryList" style="display:flex; flex-direction:column; gap:8px; margin-bottom:20px;"></div>
+            <div class="form-group">
+                <label data-i18n="newCategory">Nova Categoria</label>
+                <div style="display:flex; gap:8px;">
+                    <input type="text" id="newCategoryInput" class="glass-btn" style="flex:1; text-align:left;"
+                        data-i18n-placeholder="categoryName">
+                    <button id="btnSaveCategory" class="glass-btn primary" data-i18n="add">Add</button>
+                </div>
+            </div>
+            <div style="display:flex; justify-content:flex-end; margin-top:20px;">
+                <button class="glass-btn" data-action="close-category-modal" data-i18n="done">Pronto</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-glass" id="editModal">
+        <div class="modal-content-glass">
+            <h2 style="margin-bottom:20px;" data-i18n="editReminder">Editar Lembrete</h2>
+            <div class="form-group"><label data-i18n="titleRequired">Título *</label><input type="text" id="editTitle"
+                    class="glass-btn" style="width:100%; text-align:left;"></div>
+            <div class="form-group">
+                <label data-i18n="description">Descrição</label>
+                <div class="editor-container">
+                    <div class="editor-toolbar">
+                        <button type="button" data-action="format" data-cmd="bold" title="Negrito"
+                            data-i18n-title="bold"><b>B</b></button>
+                        <button type="button" data-action="format" data-cmd="italic" title="Itálico"
+                            data-i18n-title="italic"><i>I</i></button>
+                        <button type="button" data-action="format" data-cmd="insertUnorderedList" title="Lista"
+                            data-i18n-title="list">•</button>
+                    </div>
+                    <div id="editDesc" class="editor-content" contenteditable="true"></div>
+                </div>
+            </div>
+            <div class="form-group">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <label style="margin: 0;" data-i18n="checklist">Checklist</label>
+                    <label class="view-checklist-item" style="padding: 0; cursor: pointer; display: flex;">
+                        <input type="checkbox" id="editChecklistNumberedInput" data-action="toggle-edit-checklist-numbered">
+                        <span data-i18n="numberedChecklist" style="font-size: 14px; color: var(--text-main);">Lista Numerada</span>
+                    </label>
+                </div>
+                <div id="editChecklistContainer"></div><button id="btnAddEditChecklistItem" class="glass-btn"
+                    style="width:100%; margin-top:8px;" data-i18n="addChecklistItem">+ Adicionar Item à Lista</button>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                <div class="form-group">
+                    <label data-i18n="dueDate">Data Limite</label>
+                    <input type="date" id="editDueDateInput" class="glass-btn" style="width:100%;"
+                        onclick="this.showPicker()">
+                </div>
+                <div class="form-group">
+                    <label data-i18n="repeat">Repetir</label>
+                    <select id="editRepeatSelect" class="glass-btn" style="width:100%;">
+                        <option value="none" data-i18n="noRepeat">Não repetir</option>
+                        <option value="daily" data-i18n="daily">Diário</option>
+                        <option value="weekly" data-i18n="weekly">Semanal</option>
+                        <option value="monthly" data-i18n="monthly">Mensal</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group"><label data-i18n="tags">Tags</label>
+                <button id="btnSelectTagsEdit" class="glass-btn" style="width:100%;" data-i18n="selectTags">Selecionar
+                    Tags</button>
+                <div id="selectedTagsDisplayEdit" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;"></div>
+            </div>
+            <div class="form-group"><label data-i18n="links">Links</label>
+                <div id="editLinksContainer"></div><button id="btnAddEditLink" class="glass-btn"
+                    style="width:100%; margin-top:8px;">+ Adicionar Link</button>
+            </div>
+
+            <div class="form-group" style="margin-top: 12px;" id="edit-kanban-group">
+                <label class="view-checklist-item" style="padding: 0; cursor: pointer; display: flex;">
+                    <input type="checkbox" id="editShowInKanbanInput">
+                    <span data-i18n="showInKanban" style="font-size: 14px; color: var(--text-main);">Aparecer no
+                        Kanban</span>
+                </label>
+            </div>
+
+            <div class="form-section-divider" style="margin: 24px 0; border-top: 1px solid var(--border-glass);"></div>
+
+            <div class="form-group" id="edit-password-group">
+                <label data-i18n="passwordLock">Bloqueio por Senha</label>
+                <input type="password" id="editReminderPassword" class="glass-btn" style="width:100%; text-align:left;"
+                    placeholder="Senha para proteger este lembrete" data-i18n-placeholder="passwordLabel">
+            </div>
+
+            <!-- Edit Images -->
+            <div class="form-group">
+                <label>Imagens</label>
+                <div class="custom-file-input">
+                    <label for="editImageInput" class="glass-btn"
+                        style="width: 100%; border-style: dashed; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                            <polyline points="21 15 16 10 5 21"></polyline>
+                        </svg>
+                        Adicionar Imagens
+                    </label>
+                    <input type="file" id="editImageInput" accept="image/*" multiple style="display: none;">
+                </div>
+                <div id="editImagePreviewContainer"
+                    style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;"></div>
+            </div>
+
+            <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:20px;">
+                <button id="btnDeleteFromModal" class="glass-btn danger" data-i18n="delete">Deletar</button>
+                <button class="glass-btn" data-action="close-edit-modal" data-i18n="cancel">Cancelar</button>
+                <button data-action="save-edit-reminder" class="glass-btn primary" data-i18n="saveChanges">Salvar
+                    Alterações</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-glass" id="tagSelectionModal">
+        <div class="modal-content-glass">
+            <h2 style="margin-bottom:20px;" data-i18n="selectTags">Selecionar Tags</h2>
+            <div id="tagSelectionList" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px;"></div>
+            <div class="form-group">
+                <label data-i18n="newTag">Nova Tag</label>
+                <div style="display:flex; gap:8px;">
+                    <input type="text" id="newTagInput" class="glass-btn" style="flex:1; text-align:left;">
+                    <button data-action="add-new-tag" class="glass-btn" data-i18n="add">Add</button>
+                </div>
+            </div>
+            <div style="display:flex; justify-content:flex-end; margin-top:20px;">
+                <button data-action="confirm-tag-selection" class="glass-btn primary" data-i18n="done">Pronto</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Selecionar Tags de Contatos (Separado e com Z-Index Elevado) -->
+    <div class="modal-glass" id="contactTagSelectionModal" style="z-index: 10010;">
+        <div class="modal-content-glass">
+            <h2 style="margin-bottom:20px;" data-i18n="selectTags">Selecionar Tags</h2>
+            <div id="contactTagSelectionList" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px;"></div>
+            <div class="form-group">
+                <label data-i18n="newTag">Nova Tag</label>
+                <div style="display:flex; gap:8px;">
+                    <input type="text" id="newContactTagInput" class="glass-btn" style="flex:1; text-align:left;">
+                    <button data-action="add-new-contact-tag" class="glass-btn" data-i18n="add">Add</button>
+                </div>
+            </div>
+            <div style="display:flex; justify-content:flex-end; margin-top:20px;">
+                <button data-action="confirm-contact-tag-selection" class="glass-btn primary" data-i18n="done">Pronto</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal-glass" id="viewReminderModal">
+        <div class="modal-content-glass">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px;">
+                <h2 id="viewTitle" style="font-size: 24px; font-weight: 700;"></h2>
+                <button class="glass-btn" data-action="close-view-modal"
+                    style="display: flex; align-items: center; justify-content: center; padding: 6px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <div id="viewDesc"
+                style="font-size: 15px; color: var(--text-dim); line-height: 1.6; margin-bottom: 24px; white-space: pre-wrap;">
+            </div>
+
+            <div class="form-group">
+                <label data-i18n="checklist">Checklist</label>
+                <div id="viewChecklistDisplay"
+                    style="display: flex; flex-direction: column; gap: 4px; margin-top: 8px; margin-bottom: 24px;">
+                </div>
+            </div>
+
+            <div id="viewDueDateDisplay" style="margin-bottom: 24px;"></div>
+
+            <div id="viewTagsDisplay" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px;"></div>
+
+            <div class="form-group">
+                <label data-i18n="associatedLinks">Links Associados</label>
+                <div id="viewLinksDisplay" style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px;"></div>
+            </div>
+
+            <div class="form-group">
+                <label>Galeria</label>
+                <div id="viewImagesDisplay" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px;"></div>
+            </div>
+
+            <div id="viewCompleteAction" style="display: flex; justify-content: flex-end; margin-top: 16px;"></div>
+
+            <div
+                style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 32px; border-top: 1px solid var(--border-glass); padding-top: 24px;">
+                <button id="btnCalendarFromView" class="glass-btn" data-action="add-to-calendar"
+                    style="display: flex; align-items: center; gap: 8px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    <span data-i18n="shareGoogleCalendar">Salvar na Agenda</span>
+                </button>
+                <button id="btnShareFromView" class="glass-btn" data-action="share-from-view"
+                    style="display: flex; align-items: center; gap: 8px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"></path>
+                    </svg>
+                    <span data-i18n="shareReminder">Compartilhar</span>
+                </button>
+                <button id="btnEditFromView" class="glass-btn primary" data-action="edit-from-view"
+                    style="display: flex; align-items: center; gap: 8px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                    <span data-i18n="edit">Editar</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-glass" id="passwordModal">
+        <div class="modal-content-glass" style="max-width: 320px; text-align: center;">
+            <div style="margin-bottom: 24px;">
+                <div
+                    style="width: 60px; height: 60px; background: rgba(255, 68, 68, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff4444" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                </div>
+                <h3 data-i18n="enterPasswordToUnlock" style="margin-bottom: 8px;">Lembrete Bloqueado</h3>
+                <p data-i18n="lockDescription" style="font-size: 13px; color: var(--text-dim);">Este conteúdo é privado
+                    e requer uma senha.</p>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 20px;">
+                <input type="password" id="modalPasswordInput" class="glass-btn"
+                    style="width: 100%; text-align: center; font-size: 18px; letter-spacing: 4px;" placeholder="••••"
+                    autofocus>
+                <div id="passwordError" style="color: #ff4444; font-size: 12px; margin-top: 8px; display: none;"
+                    data-i18n="wrongPassword">Senha incorreta!</div>
+            </div>
+
+            <div style="display: flex; gap: 12px; flex-direction: column;">
+                <button id="btnUnlockModal" class="glass-btn primary"
+                    style="width: 100%; padding: 12px; font-weight: 700;" data-i18n="unlock">Desbloquear</button>
+                <button class="glass-btn" data-action="close-password-modal" style="width: 100%; padding: 12px;"
+                    data-i18n="cancel">Cancelar</button>
+                <div style="margin-top: 10px; padding-top: 15px; border-top: 1px solid var(--border-glass);">
+                    <button id="btnDeleteLocked" class="glass-btn danger"
+                        style="width: 100%; padding: 10px; font-size: 12px;" data-i18n="delete">Excluir Lembrete sem
+                        Senha</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-glass" id="imageModal"
+        style="z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(8px); background: rgba(0,0,0,0.8);">
+        <div style="position: relative; max-width: 90vw; max-height: 90vh;">
+            <img id="imageModalContent" src=""
+                style="max-width: 100%; max-height: 90vh; border-radius: 8px; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);">
+            <button class="glass-btn" data-action="close-image-modal"
+                style="position: absolute; top: -40px; right: 0; background: rgba(255, 255, 255, 0.1); color: white;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <button class="glass-btn" data-action="copy-image-modal"
+                style="position: absolute; bottom: -50px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; display: flex; align-items: center; gap: 8px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                <span data-i18n="copyImage">Copiar Imagem</span>
+            </button>
+        </div>
+    </div>
+    <div class="modal-glass" id="multiViewModal" style="z-index: 9999;">
+        <div class="modal-content-glass"
+            style="max-width: 95vw; width: 95vw; height: 90vh; display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1px;">
+                <h2 style="margin: 0;" data-i18n="multiStreamPlayer">Multi-Stream Player</h2>
+                <div style="display: flex; gap: 8px;">
+                    <button class="glass-btn" data-action="toggle-multi-view-fullscreen" style="padding: 8px;"
+                        title="Tela Cheia" data-i18n-title="fullscreen">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path
+                                d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3">
+                            </path>
+                        </svg>
+                    </button>
+                    <button class="glass-btn" data-action="close-multi-view" style="padding: 8px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div id="multiViewChatSelector" style="margin-bottom: 12px;">
+                <!-- Radio buttons generated by JS -->
+            </div>
+            <div style="flex: 1; display: flex; gap: 12px; min-height: 0;">
+                <div id="multiViewGrid" style="flex: 1; display: grid; gap: 12px; min-height: 0;">
+                    <!-- Streams will be loaded here -->
+                </div>
+                <div id="multiViewChatPanel">
+                    <iframe id="multiViewChatFrame" src="about:blank" allow="autoplay; encrypted-media"
+                        referrerpolicy="strict-origin-when-cross-origin"
+                        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: O que há de novo? -->
+    <div class="modal-glass" id="whatsNewModal" style="z-index: 10001;">
+        <div class="modal-content-glass"
+            style="max-width: 500px; padding: 0; overflow: hidden; border: 1px solid var(--primary-glow);">
+            <div
+                style="background: linear-gradient(135deg, var(--primary), var(--primary-glow)); padding: 40px 30px; text-align: center; position: relative;">
+                <div
+                    style="background: rgba(255,255,255,0.2); width: 64px; height: 64px; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; backdrop-filter: blur(5px);">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                        <path d="M2 17l10 5 10-5"></path>
+                        <path d="M2 12l10 5 10-5"></path>
+                    </svg>
+                </div>
+                <h2 id="whatsNewVersionTitle" style="color: white; margin-bottom: 8px; font-size: 24px;" data-i18n="whatsNewTitle">Remind.hub</h2>
+                <p style="color: rgba(255,255,255,0.8); font-size: 14px;" data-i18n="whatsNewSub">Descubra as novidades
+                    desta versão</p>
+            </div>
+
+            <div style="padding: 30px; max-height: 400px; overflow-y: auto; background: var(--bg-main);">
+                <div style="display: flex; flex-direction: column; gap: 24px;">
+
+                    <div style="display: flex; gap: 16px;">
+                        <div style="color: #3b82f6; background: rgba(59,130,246,0.1); width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17.5 5.5C19 7 19 7 19 10v6c0 3-1 4-4 4H9c-3 0-4-1-4-4v-6c0-3 0-3 1.5-4.5"/>
+                                <path d="M12 2v8"/>
+                                <path d="M9 7l3-3 3 3"/>
+                                <circle cx="17" cy="17" r="3" fill="rgba(59,130,246,0.2)" stroke="currentColor"/>
+                                <path d="M15.7 17.7 17 19l1.8-2.2" stroke-width="1.5"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 style="margin-bottom: 4px;">Sincronização em Nuvem</h4>
+                            <p style="font-size: 13px; color: var(--text-dim); line-height: 1.5;">Faça login com o Google e seus dados ficam automaticamente sincronizados e criptografados no Google Drive. Acesse de qualquer computador a qualquer momento!</p>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 16px;">
+                        <div style="color: var(--primary); background: rgba(0, 192, 128, 0.1); width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="8" y1="6" x2="21" y2="6"/>
+                                <line x1="8" y1="12" x2="21" y2="12"/>
+                                <line x1="8" y1="18" x2="21" y2="18"/>
+                                <polyline points="3 6 4 7 6 5"/>
+                                <polyline points="3 12 4 13 6 11"/>
+                                <polyline points="3 18 4 19 6 17"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 style="margin-bottom: 4px;">Checklists com Sublistas</h4>
+                            <p style="font-size: 13px; color: var(--text-dim); line-height: 1.5;">Organize seus lembretes com checklists avançados que suportam sublistas aninhadas, numeração automática e recuo inteligente com Tab/Shift+Tab.</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div
+                style="padding: 20px 30px; background: rgba(255,255,255,0.02); border-top: 1px solid var(--border-glass); text-align: center;">
+                <button class="glass-btn primary" data-action="close-whats-new"
+                    style="width: 100%; padding: 12px; font-weight: 600; border-radius: 12px;"
+                    data-i18n="understood">Entendido!</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Modal: Apoio Especial (v5.1.3) -->
+    <div class="modal-glass" id="donationModal" style="z-index: 10001;">
+        <div class="modal-content-glass"
+            style="max-width: 450px; padding: 0; overflow: hidden; border: 1px solid var(--primary-glow);">
+            <div
+                style="background: linear-gradient(135deg, var(--primary), var(--primary-glow)); padding: 40px 30px; text-align: center;">
+                <div
+                    style="background: rgba(255,255,255,0.2); width: 64px; height: 64px; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto; backdrop-filter: blur(5px);">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.72-8.72 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <div style="padding: 25px; background: var(--bg-main); text-align: center;">
+                <p style="color: var(--text-dim); margin-bottom: 24px; font-size: 14px; line-height: 1.5;" data-i18n="donationDescription">
+                    Se você gosta da extensão e quer apoiar o desenvolvedor, considere fazer uma doação.
+                </p>
+                
+                <div style="display: flex; flex-direction: column; gap: 20px; align-items: center;">
+                    <a href="https://www.buymeacoffee.com/endrigo" target="_blank">
+                        <img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=☕&slug=endrigo&button_colour=FFDD00&font_colour=000000&font_family=Poppins&outline_colour=000000&coffee_colour=ffffff" alt="Buy Me A Coffee" style="height: 44px !important; width: auto !important; border-radius: 8px;" />
+                    </a>
+                    
+                    <div style="text-align: center; width: 100%; border-top: 1px solid var(--border-glass); padding-top: 20px;">
+                        <img src="icons/pix_qr.png" alt="PIX QR Code" style="width: 140px; height: 140px; border-radius: 12px; margin-bottom: 16px; background: white; padding: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <span style="font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px;" data-i18n="pixKeyLabel">Chave PIX (E-mail):</span>
+                            <code style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; font-size: 13px; color: var(--primary); font-family: monospace; border: 1px solid var(--border-glass);">endrigocosta@hotmail.com</code>
+                            <button class="glass-btn" id="btnCopyPixModal" style="margin-top: 8px; padding: 10px 16px; width: 100%; font-weight: 600;" data-i18n="copyPix">Copiar Chave PIX</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div
+                style="padding: 20px 25px; background: rgba(255,255,255,0.02); border-top: 1px solid var(--border-glass); text-align: center;">
+                <button class="glass-btn primary" data-action="close-donation-modal"
+                    style="width: 100%; padding: 12px; font-weight: 600; border-radius: 12px;"
+                    data-i18n="understood">Entendido!</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Vault Setup Modal -->
+    <div class="modal-glass" id="vaultSetupModal">
+        <div class="modal-content-glass" style="max-width: 400px; background: var(--bg-sidebar); border: 1px solid var(--border-glass); backdrop-filter: blur(15px); box-shadow: 0 20px 40px rgba(0,0,0,0.4);">
+            <h2 data-i18n="vaultSetupTitle" style="margin-bottom: 8px;">Configuração do Cofre</h2>
+            <p style="color:var(--text-dim); font-size:14px; margin-bottom:20px;" data-i18n="vaultSetupDesc">Escolha uma senha segura para proteger seus lembretes privados.</p>
+            
+            <div class="form-group">
+                <label data-i18n="vaultPasswordLabel">Senha do Cofre</label>
+                <input type="password" id="vaultSetupPassword" class="glass-btn" placeholder="••••••••" style="width:100%; box-sizing: border-box; letter-spacing: 4px; background: rgba(255,255,255,0.03);">
+            </div>
+            
+            <div class="form-group">
+                <label data-i18n="vaultHint">Dica de Senha / Frase de Recuperação</label>
+                <input type="text" id="vaultSetupHint" class="glass-btn" data-i18n-placeholder="vaultHintPlaceholder" style="width:100%; box-sizing: border-box;">
+                <small style="color:var(--primary); display:block; margin-top:4px; font-weight: 600;" data-i18n="hintRequired">A frase de recuperação (dica) é obrigatória.</small>
+            </div>
+
+            <div style="background: rgba(255, 68, 68, 0.1); border: 1px solid rgba(255, 68, 68, 0.2); border-radius: 12px; padding: 12px; margin-top: 20px;">
+                <div style="display: flex; gap: 10px; align-items: flex-start; color: var(--accent-error);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                    <p style="font-size: 11px; line-height: 1.4; margin: 0;" data-i18n="vaultWarning">Atenção: Se você esquecer a senha e a frase de recuperação, não há como recuperar seus dados. Você poderá apenas resetar o cofre, o que apagará todos os lembretes privados.</p>
+                </div>
+            </div>
+            
+            <div class="modal-actions" style="margin-top:24px; display: flex; gap: 12px;">
+                <button class="glass-btn" data-action="close-vault-setup" data-i18n="cancel" style="flex:1;">Cancelar</button>
+                <button class="glass-btn primary" data-action="save-vault-setup" data-i18n="save" style="flex:1;">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vault Access Modal -->
+    <div class="modal-glass" id="vaultAccessModal">
+        <div class="modal-content-glass" style="max-width: 400px; text-align: center; background: var(--bg-sidebar); border: 1px solid var(--border-glass); backdrop-filter: blur(15px); box-shadow: 0 20px 40px rgba(0,0,0,0.4);">
+            <div class="stat-icon" style="background: rgba(0, 192, 128, 0.1); color: var(--primary); margin: 0 auto 20px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+            </div>
+            <h2 data-i18n="vaultAccessTitle" style="margin-bottom: 8px;">Acesso ao Cofre</h2>
+            <p style="color:var(--text-dim); font-size:14px; margin-bottom:20px;" data-i18n="vaultDescription">Guarde seus lembretes mais privados com uma camada extra de segurança por senha.</p>
+            
+            <div class="form-group">
+                <input type="password" id="vaultAccessPassword" class="glass-btn" data-i18n-placeholder="vaultPasswordPrompt" style="text-align: center; font-size: 18px; width:100%; box-sizing: border-box; letter-spacing: 4px; background: rgba(255,255,255,0.03);">
+            </div>
+            
+            <div id="vaultHintDisplay" style="display:none; margin-top:10px; color:var(--primary); font-style:italic; padding: 12px; background: rgba(0, 192, 128, 0.05); border-radius: 12px; font-size: 13px; border: 1px dashed var(--primary);"></div>
+            
+            <div class="modal-actions" style="margin-top:24px; display: flex; flex-direction: column; gap: 10px;">
+                <button class="glass-btn primary" data-action="unlock-vault" style="width:100%;" data-i18n="unlock">Desbloquear</button>
+                <div style="display:flex; gap:10px; width:100%;">
+                    <button class="glass-btn" data-action="show-vault-hint" style="flex:1;" data-i18n="showVaultHint">Dica</button>
+                    <button class="glass-btn" data-action="confirm-vault-reset" style="flex:1; color:var(--accent-error); border-color:var(--accent-error);" data-i18n="reset">Resetar</button>
+                </div>
+                <button class="glass-btn" data-action="close-vault-access" style="width:100%;" data-i18n="cancel">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Form Modal (Create / Edit) -->
+    <div class="modal-glass" id="contactFormModal">
+        <div class="modal-content-glass">
+            <h2 id="contactFormModalTitle" style="margin-bottom:20px;" data-i18n="newContact">Novo Contato</h2>
+            <div class="form-group">
+                <label data-i18n="contactName">Nome *</label>
+                <input type="text" id="contactNameInput" class="glass-btn" style="width:100%; text-align:left;">
+            </div>
+            <div class="form-group">
+                <label data-i18n="contactPhone">Telefone</label>
+                <input type="text" id="contactPhoneInput" class="glass-btn" style="width:100%; text-align:left;" placeholder="(xx) xxxxx-xxxx">
+            </div>
+            <div class="form-group">
+                <label data-i18n="contactEmail">E-mail</label>
+                <input type="email" id="contactEmailInput" class="glass-btn" style="width:100%; text-align:left;" placeholder="email@exemplo.com">
+            </div>
+            <div class="form-group">
+                <label data-i18n="contactCompany">Empresa / Cargo</label>
+                <input type="text" id="contactCompanyInput" class="glass-btn" style="width:100%; text-align:left;">
+            </div>
+            <div class="form-group">
+                <label data-i18n="contactNotes">Notas</label>
+                <textarea id="contactNotesInput" class="glass-btn" style="width: 100%; text-align: left; height: 100px; padding: 12px; resize: none;"></textarea>
+            </div>
+            <div class="form-group">
+                <label data-i18n="tags">Tags</label>
+                <button id="btnSelectContactTags" class="glass-btn" style="width:100%;" data-i18n="selectTags" data-action="select-contact-tags">Selecionar Tags</button>
+            </div>
+            <div id="selectedContactTagsDisplay" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px;"></div>
+            <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:20px;">
+                <button class="glass-btn" data-action="close-contact-form-modal" data-i18n="cancel">Cancelar</button>
+                <button id="btnSaveContact" class="glass-btn primary" data-i18n="save">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Contact Modal -->
+    <div class="modal-glass" id="viewContactModal">
+        <div class="modal-content-glass">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px;">
+                <h2 id="viewContactName" style="font-size: 24px; font-weight: 700;"></h2>
+                <button class="glass-btn" data-action="close-view-contact-modal"
+                    style="display: flex; align-items: center; justify-content: center; padding: 6px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 32px;">
+                <div class="form-group" id="viewContactPhoneGroup">
+                    <label data-i18n="contactPhone" style="font-size: 11px; color: var(--text-dim); text-transform: uppercase;">Telefone</label>
+                    <div id="viewContactPhone" style="font-size: 16px; color: var(--text-main); margin-top: 4px; font-weight: 500;"></div>
+                </div>
+                <div class="form-group" id="viewContactEmailGroup">
+                    <label data-i18n="contactEmail" style="font-size: 11px; color: var(--text-dim); text-transform: uppercase;">E-mail</label>
+                    <div id="viewContactEmail" style="font-size: 16px; color: var(--text-main); margin-top: 4px; font-weight: 500;"></div>
+                </div>
+                <div class="form-group" id="viewContactCompanyGroup">
+                    <label data-i18n="contactCompany" style="font-size: 11px; color: var(--text-dim); text-transform: uppercase;">Empresa / Cargo</label>
+                    <div id="viewContactCompany" style="font-size: 16px; color: var(--text-main); margin-top: 4px; font-weight: 500;"></div>
+                </div>
+                <div class="form-group" id="viewContactNotesGroup">
+                    <label data-i18n="contactNotes" style="font-size: 11px; color: var(--text-dim); text-transform: uppercase;">Notas</label>
+                    <div id="viewContactNotes" style="font-size: 14px; color: var(--text-dim); margin-top: 4px; white-space: pre-wrap; line-height: 1.5;"></div>
+                </div>
+                <div class="form-group" id="viewContactTagsGroup">
+                    <label data-i18n="tags" style="font-size: 11px; color: var(--text-dim); text-transform: uppercase;">Tags</label>
+                    <div id="viewContactTags" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;"></div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 12px; justify-content: flex-end; border-top: 1px solid var(--border-glass); padding-top: 24px;">
+                <button id="btnDeleteContact" class="glass-btn danger" style="margin-right: auto;" data-i18n="delete">Excluir</button>
+                <button id="btnShareContactWhatsApp" class="glass-btn" style="display: flex; align-items: center; gap: 8px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="#25D366">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.56 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                    </svg>
+                    <span data-i18n="shareContact">Compartilhar</span>
+                </button>
+                <button id="btnCopyContactData" class="glass-btn" style="display: flex; align-items: center; gap: 8px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    <span data-i18n="copyContact">Copiar</span>
+                </button>
+                <button id="btnEditContact" class="glass-btn primary" style="display: flex; align-items: center; gap: 8px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                    <span data-i18n="edit">Editar</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/main.js"></script>
+    <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
+</body>
+
+</html>

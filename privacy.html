@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Política de Privacidade - Remind.hub</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --primary: #00c080;
+            --primary-glow: rgba(0, 192, 128, 0.15);
+            --font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-family);
+            line-height: 1.6;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 0%, #00c080 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        main {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 40px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        h1, h2, h3 {
+            color: #fff;
+            margin-top: 30px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h2::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 1.2rem;
+            background-color: var(--primary);
+            border-radius: 2px;
+        }
+
+        p, li {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .highlight-box {
+            background: rgba(0, 192, 128, 0.05);
+            border-left: 4px solid var(--primary);
+            padding: 20px;
+            border-radius: 0 12px 12px 0;
+            margin: 20px 0;
+        }
+
+        .highlight-box p {
+            color: var(--text-main);
+            margin: 0;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        a {
+            color: var(--primary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: #00e699;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">Remind.hub</div>
+            <div class="subtitle">Produtividade & Segurança em suas mãos</div>
+        </header>
+        
+        <main>
+            <h1>Política de Privacidade</h1>
+            <p><strong>Última atualização:</strong> 1 de julho de 2026</p>
+            
+            <p>Esta Política de Privacidade descreve como a extensão <strong>Remind.hub</strong> ("nós", "nosso") coleta, utiliza, armazena e protege as informações dos usuários ao utilizar a nossa extensão de navegador.</p>
+            
+            <div class="highlight-box">
+                <p><strong>Compromisso de Privacidade:</strong> A sua privacidade é nossa prioridade absoluta. A extensão Remind.hub foi projetada para que todos os seus dados permaneçam sob seu controle exclusivo. Nós não possuímos servidores externos para coletar ou armazenar seus lembretes, contatos ou informações pessoais.</p>
+            </div>
+
+            <h2>1. Informações que Coletamos e Como as Utilizamos</h2>
+            <p>A extensão funciona localmente no seu navegador e utiliza armazenamento local seguro. As seguintes permissões e dados são necessários para o funcionamento das funcionalidades:</p>
+            <ul>
+                <li><strong>Armazenamento Local (Storage):</strong> Utilizado para salvar suas configurações, lembretes, listas Kanban, contatos e preferências diretamente no seu computador.</li>
+                <li><strong>Alarmes (Alarms) e Notificações (Notifications):</strong> Utilizados para disparar alertas visuais e sonoros nos horários configurados por você para seus lembretes.</li>
+                <li><strong>Identidade (Identity):</strong> Utilizada exclusivamente para autenticar você com sua própria conta do Google via OAuth2, viabilizando a sincronização em nuvem.</li>
+            </ul>
+
+            <h2>2. Sincronização com o Google Drive (OAuth2)</h2>
+            <p>A extensão oferece uma funcionalidade opcional de sincronização de dados em nuvem. Ao ativar este recurso:</p>
+            <ul>
+                <li><strong>Escopo de Acesso (drive.appdata):</strong> Nós solicitamos acesso apenas à pasta oculta de dados de aplicativos no seu Google Drive (Application Data Folder). A extensão <strong>não tem acesso</strong> aos seus arquivos pessoais, fotos ou outros documentos do seu Drive.</li>
+                <li><strong>Criptografia Local:</strong> Antes de serem enviados para a nuvem, todos os seus dados de sincronização são criptografados localmente no seu computador usando o algoritmo <strong>AES-GCM de 256 bits</strong>, derivado de uma chave única do seu perfil.</li>
+                <li><strong>Trânsito Seguro:</strong> Os dados criptografados são transmitidos diretamente do seu navegador para os servidores seguros do Google Drive via protocolo HTTPS.</li>
+            </ul>
+
+            <h2>3. Compartilhamento de Dados</h2>
+            <p>Nós <strong>não vendemos, alugamos, compartilhamos ou transferimos</strong> nenhum dado pessoal ou de uso para terceiros. Todas as informações permanecem estritamente armazenadas no seu computador e na pasta segura do seu próprio Google Drive.</p>
+
+            <h2>4. Seus Direitos e Controle</h2>
+            <p>Você tem controle total sobre os seus dados a qualquer momento:</p>
+            <ul>
+                <li>Você pode desativar a sincronização diretamente no menu de perfil da extensão.</li>
+                <li>Você pode excluir permanentemente o arquivo de backup armazenado no seu Google Drive clicando em "Excluir dados na nuvem" nas opções da extensão ou nas configurações do seu próprio Google Drive.</li>
+                <li>Você pode exportar ou importar um backup completo dos seus dados locais no formato JSON quando desejar.</li>
+            </ul>
+
+            <h2>5. Contato</h2>
+            <p>Se você tiver alguma dúvida sobre esta política de privacidade ou sobre o funcionamento da extensão, entre em contato com o desenvolvedor através do e-mail de suporte ou abrindo uma issue no repositório correspondente.</p>
+        </main>
+        
+        <footer>
+            <p>&copy; 2026 Remind.hub. Desenvolvido por Endrigo.</p>
+        </footer>
+    </div>
+</body>
+</html>

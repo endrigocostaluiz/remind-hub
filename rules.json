@@ -1,0 +1,274 @@
+[
+    {
+        "id": 1,
+        "priority": 100,
+        "action": {
+            "type": "modifyHeaders",
+            "requestHeaders": [
+                {
+                    "header": "Referer",
+                    "operation": "set",
+                    "value": "https://driftweb.com.br/"
+                },
+                {
+                    "header": "Origin",
+                    "operation": "set",
+                    "value": "https://driftweb.com.br"
+                }
+            ],
+            "responseHeaders": [
+                {
+                    "header": "x-frame-options",
+                    "operation": "remove"
+                },
+                {
+                    "header": "content-security-policy",
+                    "operation": "remove"
+                },
+                {
+                    "header": "content-security-policy-report-only",
+                    "operation": "remove"
+                },
+                {
+                    "header": "frame-options",
+                    "operation": "remove"
+                },
+                {
+                    "header": "cross-origin-embedder-policy",
+                    "operation": "remove"
+                },
+                {
+                    "header": "cross-origin-opener-policy",
+                    "operation": "remove"
+                },
+                {
+                    "header": "cross-origin-resource-policy",
+                    "operation": "remove"
+                }
+            ]
+        },
+        "condition": {
+            "urlFilter": "https://*.youtube-nocookie.com/embed/*",
+            "resourceTypes": [
+                "sub_frame"
+            ]
+        }
+    },
+    {
+        "id": 2,
+        "priority": 10,
+        "action": {
+            "type": "modifyHeaders",
+            "responseHeaders": [
+                {
+                    "header": "x-frame-options",
+                    "operation": "remove"
+                },
+                {
+                    "header": "content-security-policy",
+                    "operation": "remove"
+                },
+                {
+                    "header": "frame-options",
+                    "operation": "remove"
+                },
+                {
+                    "header": "cross-origin-opener-policy",
+                    "operation": "remove"
+                },
+                {
+                    "header": "cross-origin-embedder-policy",
+                    "operation": "remove"
+                },
+                {
+                    "header": "cross-origin-resource-policy",
+                    "operation": "remove"
+                },
+                {
+                    "header": "cross-origin-opener-policy",
+                    "operation": "remove"
+                }
+            ]
+        },
+        "condition": {
+            "requestDomains": [
+                "twitch.tv",
+                "www.twitch.tv",
+                "kick.com",
+                "player.kick.com"
+            ],
+            "resourceTypes": [
+                "sub_frame"
+            ]
+        }
+    },
+    {
+        "id": 3,
+        "priority": 2000,
+        "action": {
+            "type": "modifyHeaders",
+            "requestHeaders": [
+                {
+                    "header": "Referer",
+                    "operation": "set",
+                    "value": "https://www.twitch.tv/"
+                },
+                {
+                    "header": "Origin",
+                    "operation": "set",
+                    "value": "https://www.twitch.tv"
+                }
+            ]
+        },
+        "condition": {
+            "requestDomains": [
+                "twitch.tv",
+                "www.twitch.tv"
+            ],
+            "resourceTypes": [
+                "sub_frame",
+                "xmlhttprequest",
+                "fetch",
+                "media",
+                "script",
+                "image"
+            ]
+        }
+    },
+    {
+        "id": 4,
+        "priority": 1000,
+        "action": {
+            "type": "modifyHeaders",
+            "requestHeaders": [
+                {
+                    "header": "Referer",
+                    "operation": "set",
+                    "value": "https://driftweb.com.br/"
+                },
+                {
+                    "header": "Origin",
+                    "operation": "set",
+                    "value": "https://driftweb.com.br"
+                }
+            ],
+            "responseHeaders": [
+                {
+                    "header": "x-frame-options",
+                    "operation": "remove"
+                },
+                {
+                    "header": "content-security-policy",
+                    "operation": "remove"
+                },
+                {
+                    "header": "content-security-policy-report-only",
+                    "operation": "remove"
+                },
+                {
+                    "header": "x-content-security-policy",
+                    "operation": "remove"
+                },
+                {
+                    "header": "x-webkit-csp",
+                    "operation": "remove"
+                },
+                {
+                    "header": "frame-options",
+                    "operation": "remove"
+                }
+            ]
+        },
+        "condition": {
+            "excludedRequestDomains": [
+                "google.com",
+                "mail.google.com",
+                "accounts.google.com",
+                "www.google.com",
+                "google.com.br",
+                "perplexity.ai",
+                "www.perplexity.ai"
+            ],
+            "resourceTypes": [
+                "sub_frame"
+            ]
+        }
+    },
+    {
+        "id": 5,
+        "priority": 2000,
+        "action": {
+            "type": "modifyHeaders",
+            "requestHeaders": [
+                { "header": "Referer", "operation": "set", "value": "https://kick.com/" },
+                { "header": "Origin", "operation": "set", "value": "https://kick.com" }
+            ]
+        },
+        "condition": {
+            "requestDomains": [
+                "kick.com",
+                "player.kick.com"
+            ],
+            "resourceTypes": [
+                "sub_frame",
+                "xmlhttprequest",
+                "fetch",
+                "media",
+                "script",
+                "image"
+            ]
+        }
+    },
+    {
+        "id": 6,
+        "priority": 2500,
+        "action": {
+            "type": "modifyHeaders",
+            "responseHeaders": [
+                { "header": "content-security-policy", "operation": "remove" },
+                { "header": "content-security-policy-report-only", "operation": "remove" },
+                { "header": "x-frame-options", "operation": "remove" },
+                { "header": "cross-origin-embedder-policy", "operation": "remove" },
+                { "header": "cross-origin-opener-policy", "operation": "remove" },
+                { "header": "cross-origin-resource-policy", "operation": "remove" }
+            ]
+        },
+        "condition": {
+            "urlFilter": "||perplexity.ai/*",
+            "resourceTypes": [
+                "main_frame",
+                "sub_frame",
+                "xmlhttprequest"
+            ]
+        }
+    },
+    {
+        "id": 7,
+        "priority": 2000,
+        "action": {
+            "type": "modifyHeaders",
+            "requestHeaders": [
+                { "header": "Referer", "operation": "set", "value": "https://driftweb.com.br/" },
+                { "header": "Origin", "operation": "set", "value": "https://driftweb.com.br" },
+                { "header": "Sec-Fetch-Dest", "operation": "remove" },
+                { "header": "Sec-Fetch-Mode", "operation": "remove" },
+                { "header": "Sec-Fetch-Site", "operation": "remove" }
+            ],
+            "responseHeaders": [
+                { "header": "x-frame-options", "operation": "remove" },
+                { "header": "content-security-policy", "operation": "remove" },
+                { "header": "content-security-policy-report-only", "operation": "remove" },
+                { "header": "frame-options", "operation": "remove" },
+                { "header": "cross-origin-embedder-policy", "operation": "remove" },
+                { "header": "cross-origin-opener-policy", "operation": "remove" },
+                { "header": "cross-origin-resource-policy", "operation": "remove" }
+            ]
+        },
+        "condition": {
+            "urlFilter": "*://www.youtube.com/live_chat*",
+            "resourceTypes": [
+                "sub_frame"
+            ]
+        }
+    }
+]

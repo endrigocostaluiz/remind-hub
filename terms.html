@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Termos de Serviço - Remind.hub</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --primary: #00c080;
+            --primary-glow: rgba(0, 192, 128, 0.15);
+            --font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-family);
+            line-height: 1.6;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 0%, #00c080 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        main {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 40px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        h1, h2, h3 {
+            color: #fff;
+            margin-top: 30px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h2::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 1.2rem;
+            background-color: var(--primary);
+            border-radius: 2px;
+        }
+
+        p, li {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        a {
+            color: var(--primary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: #00e699;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">Remind.hub</div>
+            <div class="subtitle">Produtividade & Segurança em suas mãos</div>
+        </header>
+        
+        <main>
+            <h1>Termos de Serviço</h1>
+            <p><strong>Última atualização:</strong> 1 de julho de 2026</p>
+            
+            <p>Ao instalar e utilizar a extensão <strong>Remind.hub</strong>, você concorda com os seguintes Termos de Serviço. Por favor, leia-os com atenção.</p>
+
+            <h2>1. Descrição do Serviço</h2>
+            <p>O Remind.hub é uma extensão de navegador de produtividade completa que oferece gerenciamento de lembretes, quadros Kanban, cofre de segurança, contatos, Picture-in-Picture Apps, sessões de foco, atalhos rápidos e monitoramento de transmissões ao vivo.</p>
+
+            <h2>2. Uso Aceitável</h2>
+            <p>Você concorda em usar o Remind.hub apenas para fins legais e pessoais. Como os dados são armazenados localmente e na sua própria conta do Google Drive, você é o único responsável pela integridade, legalidade e segurança do conteúdo armazenado na extensão.</p>
+
+            <h2>3. Isenção de Responsabilidade</h2>
+            <p>A extensão é fornecida "como está" (as-is), sem garantias de qualquer tipo, expressas ou implícitas. Embora nos esforcemos para manter seus dados seguros e implementar criptografia local forte para backups, não nos responsabilizamos por:</p>
+            <ul>
+                <li>Perda de dados decorrente de mau funcionamento do navegador, exclusão manual de dados do navegador ou formatação do sistema.</li>
+                <li>Problemas de indisponibilidade ou falhas na API do Google Drive durante a sincronização em nuvem.</li>
+                <li>Esquecimento de senhas configuradas localmente para recursos como o Cofre de segurança (uma vez que não mantemos cópias de senhas nos nossos servidores).</li>
+            </ul>
+
+            <h2>4. Modificações nos Termos e no Serviço</h2>
+            <p>Reservamo-nos o direito de modificar ou descontinuar a extensão (ou qualquer parte dela) a qualquer momento, com ou sem aviso prévio. Também podemos atualizar estes termos ocasionalmente para refletir melhorias no serviço ou atualizações regulatórias.</p>
+
+            <h2>5. Lei Aplicável</h2>
+            <p>Estes termos são regidos pelas leis da República Federativa do Brasil.</p>
+        </main>
+        
+        <footer>
+            <p>&copy; 2026 Remind.hub. Desenvolvido por Endrigo.</p>
+        </footer>
+    </div>
+</body>
+</html>
