@@ -52,7 +52,7 @@ async function setupInitialAlarms() {
 
 chrome.action.onClicked.addListener(() => {
   chrome.tabs.create({
-    url: chrome.runtime.getURL('index.html')
+    url: chrome.runtime.getURL('app.html')
   });
 });
 

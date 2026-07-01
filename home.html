@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remind.hub - Central de Produtividade & Foco</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Plus+Jakarta+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #080b11;
+            --bg-grid: rgba(0, 192, 128, 0.02);
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --border-color: rgba(255, 255, 255, 0.06);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --primary: #00c080;
+            --primary-glow: rgba(0, 192, 128, 0.35);
+            --primary-hover: #00e699;
+            --font-display: 'Outfit', sans-serif;
+            --font-body: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 192, 128, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(0, 120, 255, 0.03) 0%, transparent 40%),
+                linear-gradient(rgba(255, 255, 255, 0.003) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.003) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+            color: var(--text-main);
+            font-family: var(--font-body);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Navigation */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .brand {
+            font-family: var(--font-display);
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 30%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand::before {
+            content: '⚡';
+            font-size: 1.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 24px;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 100px 0 80px 0;
+            position: relative;
+        }
+
+        .hero-badge {
+            background: rgba(0, 192, 128, 0.08);
+            border: 1px solid rgba(0, 192, 128, 0.2);
+            color: var(--primary);
+            padding: 8px 16px;
+            border-radius: 99px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+            letter-spacing: 0.5px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(0, 192, 128, 0.2); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 192, 128, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 192, 128, 0); }
+        }
+
+        .hero h1 {
+            font-family: var(--font-display);
+            font-size: 4rem;
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -1px;
+            max-width: 900px;
+            margin: 0 auto 24px auto;
+            background: linear-gradient(to right, #ffffff, #e5e7eb, #9ca3af, var(--primary));
+            background-size: 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: textShine 6s ease-in-out infinite;
+        }
+
+        @keyframes textShine {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            max-width: 700px;
+            margin: 0 auto 40px auto;
+        }
+
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            font-family: var(--font-display);
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 16px 32px;
+            border-radius: 12px;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: #000;
+            border: none;
+            box-shadow: 0 4px 20px var(--primary-glow);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(0, 192, 128, 0.5);
+        }
+
+        .btn-secondary {
+            background-color: var(--card-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* Features Section */
+        .features {
+            padding: 80px 0;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .section-header h2 {
+            font-family: var(--font-display);
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+
+        .section-header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 32px;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(800px circle at var(--mouse-x, 0) var(--mouse-y, 0), rgba(0, 192, 128, 0.06), transparent 40%);
+            z-index: 1;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(0, 192, 128, 0.2);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .icon-box {
+            width: 52px;
+            height: 52px;
+            background: rgba(0, 192, 128, 0.08);
+            border: 1px solid rgba(0, 192, 128, 0.15);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 24px;
+            color: var(--primary);
+        }
+
+        .card h3 {
+            font-family: var(--font-display);
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* Security / Privacy pledge Section */
+        .security-badge-section {
+            background: linear-gradient(135deg, rgba(0, 192, 128, 0.04) 0%, rgba(0, 120, 255, 0.01) 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 48px;
+            margin: 80px 0;
+            display: flex;
+            align-items: center;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+
+        .security-info {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .security-info h2 {
+            font-family: var(--font-display);
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+
+        .security-info p {
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+
+        .security-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .sec-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            color: var(--text-main);
+        }
+
+        .sec-item::before {
+            content: '✓';
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        /* Footer */
+        footer {
+            border-top: 1px solid var(--border-color);
+            padding: 48px 0;
+            margin-top: 80px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .footer-nav {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .footer-nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-nav a:hover {
+            color: var(--primary);
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.8rem;
+            }
+            .hero {
+                padding: 60px 0;
+            }
+            .security-badge-section {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="container">
+        <div class="brand">Remind.hub</div>
+        <div class="nav-links">
+            <a href="privacy.html">Privacidade</a>
+            <a href="terms.html">Termos</a>
+            <a href="https://github.com/endrigocostaluiz/remind-hub" target="_blank">GitHub</a>
+        </div>
+    </nav>
+
+    <header class="hero container">
+        <div class="hero-badge">
+            <span>✨</span> Versão 5.1.8 já disponível
+        </div>
+        <h1>Sua Central de Produtividade & Foco Completa</h1>
+        <p>A extensão definitiva para navegadores Chromium. Substitua dezenas de guias por um único painel de alta performance com Lembretes, Kanban, Cofre criptografado e Sincronização em nuvem.</p>
+        <div class="cta-buttons">
+            <a href="https://chromewebstore.google.com/detail/remindhub/didlcedihebbecogibmmgampkeeflmmj" target="_blank" class="btn btn-primary">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="margin-top: -2px;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                Instalar no Chrome
+            </a>
+            <a href="https://github.com/endrigocostaluiz/remind-hub" target="_blank" class="btn btn-secondary">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="margin-top: -2px;"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+                Código no GitHub
+            </a>
+        </div>
+    </header>
+
+    <section class="features container">
+        <div class="section-header">
+            <h2>Desenvolvida para o seu fluxo de trabalho</h2>
+            <p>Conheça as principais ferramentas nativas que tornam o Remind.hub único.</p>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <div class="icon-box">🔔</div>
+                <h3>Lembretes Inteligentes</h3>
+                <p>Programe lembretes diários, semanais ou mensais e receba avisos e alarmes em tempo real diretamente na tela.</p>
+            </div>
+            <div class="card">
+                <div class="icon-box">📋</div>
+                <h3>Quadros Kanban</h3>
+                <p>Organize suas tarefas visualmente no modelo ágil com colunas interativas, organizando seu dia a dia profissional e pessoal.</p>
+            </div>
+            <div class="card">
+                <div class="icon-box">🔒</div>
+                <h3>Cofre de Segurança</h3>
+                <p>Guarde informações sigilosas e senhas em um cofre encriptado localmente por senha de acesso.</p>
+            </div>
+            <div class="card">
+                <div class="icon-box">📇</div>
+                <h3>Contatos por Pastas</h3>
+                <p>Agenda completa de contatos organizada por tags e agrupada em pastas para maior praticidade de acesso.</p>
+            </div>
+            <div class="card">
+                <div class="icon-box">📺</div>
+                <h3>PiP Apps</h3>
+                <p>Mini-reprodutores flutuantes para Twitch, Kick e YouTube. Assista e acompanhe streams enquanto navega ou trabalha.</p>
+            </div>
+            <div class="card">
+                <div class="icon-box">⏱️</div>
+                <h3>Sessões de Foco</h3>
+                <p>Gerencie blocos de tempo com cronômetros baseados no método Pomodoro para melhorar sua concentração.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="container">
+        <div class="security-badge-section">
+            <div class="security-info">
+                <h2>Seus dados, sua propriedade</h2>
+                <p>Acreditamos em privacidade absoluta. O Remind.hub armazena os seus dados de forma descentralizada. Sem servidores externos e sem coleta silenciosa de informações.</p>
+                <div class="security-features">
+                    <div class="sec-item">Criptografia AES-GCM-256 local</div>
+                    <div class="sec-item">Sincronização direta com seu Drive</div>
+                    <div class="sec-item">Nenhum dado é vendido ou coletado</div>
+                    <div class="sec-item">Código 100% aberto e auditável</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="container">
+        <div class="footer-nav">
+            <a href="privacy.html">Política de Privacidade</a>
+            <a href="terms.html">Termos de Serviço</a>
+            <a href="https://github.com/endrigocostaluiz/remind-hub" target="_blank">Código Fonte</a>
+        </div>
+        <p>&copy; 2026 Remind.hub. Desenvolvido por Endrigo. Todos os direitos reservados.</p>
+    </footer>
+
+    <script>
+        // Efeito interativo de iluminação nos cards
+        const cards = document.querySelectorAll('.card');
+        cards.forEach(card => {
+            card.addEventListener('mousemove', e => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+            });
+        });
+    </script>
+</body>
+</html>
