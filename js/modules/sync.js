@@ -209,6 +209,17 @@ function getAuthTokenSilent() {
 async function handleLoginSuccess(token) {
     syncState.token = token;
     
+    // Salvar token e expiração (1 hora) no storage local para evitar deslogamentos frequentes
+    try {
+        const expiresAt = Date.now() + 3500 * 1000;
+        await chrome.storage.local.set({
+            "driftweb_sync_oauth_token": token,
+            "driftweb_sync_oauth_expires": expiresAt
+        });
+    } catch (e) {
+        console.warn("Erro ao salvar token no storage:", e);
+    }
+    
     // Obter informações do perfil do usuário
     try {
         const res = await fetch("https://www.googleapis.com/oauth2/v1/userinfo?alt=json", {
