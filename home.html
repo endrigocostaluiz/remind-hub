@@ -66,12 +66,7 @@
             -webkit-text-fill-color: transparent;
             display: flex;
             align-items: center;
-            gap: 10px;
-        }
-
-        .brand::before {
-            content: '⚡';
-            font-size: 1.5rem;
+            gap: 12px;
         }
 
         .nav-links {
@@ -376,7 +371,10 @@
 </head>
 <body>
     <nav class="container">
-        <div class="brand">Remind.hub</div>
+        <div class="brand">
+            <img src="icons/icon128.png" alt="Remind.hub Logo" style="width: 32px; height: 32px; border-radius: 8px;">
+            Remind.hub
+        </div>
         <div class="nav-links">
             <a href="privacy.html">Privacidade</a>
             <a href="terms.html">Termos</a>
@@ -385,6 +383,7 @@
     </nav>
 
     <header class="hero container">
+        <img src="icons/icon128.png" alt="Remind.hub Logo" style="width: 80px; height: 80px; border-radius: 18px; margin-bottom: 24px; box-shadow: 0 10px 30px rgba(0, 192, 128, 0.25); border: 1px solid rgba(255, 255, 255, 0.1);">
         <div class="hero-badge">
             <span>✨</span> Versão 5.1.8 já disponível
         </div>
